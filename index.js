@@ -4,7 +4,11 @@
  * ODBC specific extension of the {@link Manager~ConnectionOptions} from the [`sqler`](https://ugate.github.io/sqler/) module.
  * @typedef {Manager~ConnectionOptions} OdbcConnectionOptions
  * @property {Object} [driverOptions] The `odbc` module specific options.
- * @property {Object} [driverOptions.connection] An object that will contain properties that will be used to construct the ODBC connection string.
+ * @property {Object} [driverOptions.connection] An object that will contain properties/values that will be used to construct the ODBC connection string.
+ * For example, `{ UID: 'someUsername', PWD: 'somePassword' }` would generate `UID=someUsername;PWD=somePassword`.
+ * __Any {@link Manager~PrivateOptions} used will override the `driverOptions.connection` properties/values
+ * (e.g. `priv = { username: 'someUser', password: 'somePwd' }` would override `driverOptions.connection = { UID: 'ignoreUser', PWD: 'ignorePwd' }`).
+ * Likewise, `options.service = 'MyDSN'` will override `driverOptions.connection.DSN = 'IgnoreDSN'`.__
  * When a value is a string surrounded by `${}`, it will be assumed to be a _constant_ property that resides on the `odbc` module and will be interpolated
  * accordingly.
  * For example `driverOptions.connection.someProp = '${ODBC_CONSTANT}'` will be interpolated as `driverOptions.connection.someProp = odbc.ODBC_CONSTANT`.
@@ -25,8 +29,10 @@
  * @property {Object} [driverOptions.exec] The options passed into various `odbc` functions during {@link Manager.exec}.
  * When a value is a string surrounded by `${}`, it will be assumed to be a _constant_ property that resides on the `odbc` module and will be interpolated
  * accordingly.
- * For example `driverOptions.exec.isolationLevel = '${SQL_TXN_READ_UNCOMMITTED}'` will be interpolated as `someProp = odbc.SQL_TXN_READ_UNCOMMITTED`.
+ * For example `driverOptions.exec.isolationLevel = '${SQL_TXN_READ_UNCOMMITTED}'` will be interpolated as
+ * `driverOptions.exec.isolationLevel = odbc.SQL_TXN_READ_UNCOMMITTED`.
  * @property {Integer} [driverOptions.exec.isolationLevel] The isolation level to set on the ODBC connection.
+ * __Ignored when `opts.type === 'READ'` and  `opts.transactionId` is ommitted.__
  */
 
 /**
@@ -59,15 +65,30 @@ module.exports = class OdbcDialect {
       pending: 0,
       connection: {}
     };
-    
-    if (dlt.at.opts.connection) {
-      let val;
-      for (let connProp in dlt.at.opts.connection) {
-        val = (connProp === 'UID' && priv.username) || (connProp === 'PWD' && priv.password)
-          || (connProp.toUpperCase() === 'SERVER' && priv.host ? (priv.hasOwnProperty('port') && `${priv.host}:${priv.port}`) : priv.host)
-          || dlt.at.opts.connection[connProp];
-        dlt.at.opts.connStr += `${dlt.at.opts.connStr ? ';' : ''}${connProp}=${val}`;
+
+    dlt.at.opts.pool.connectionString = '';
+    const connProp = (name, src, srcName, sensitive) => {
+      if (src.hasOwnProperty(srcName)) {
+        const append = srcName === 'host' && src.hasOwnProperty('port') ? `:${src.port}` : '';
+        dlt.at.opts.connection = dlt.at.opts.connection || {};
+        if (dlt.at.logger && dlt.at.opts.connection.hasOwnProperty(name)) {
+          dlt.at.logger(`ODBC: Overriding "driverOptions.connection.${name}${
+            sensitive ? '' : `=${dlt.at.opts.connection[name]}`}" with configured option value ${
+              sensitive ? `named "${srcName}"` : `"${srcName}=${src[srcName]}"` }`);
+        }
+        dlt.at.opts.connection[name] = `${src[srcName]}${append}`;
       }
+    };
+    connProp('DSN', connConf, 'service');
+    connProp('SERVER', priv, 'host');
+    connProp('UID', priv, 'username');
+    connProp('PWD', priv, 'password', true);
+    if (dlt.at.opts.connection) {
+      let cstr = '';
+      for (let connProp in dlt.at.opts.connection) {
+        cstr += `${cstr ? ';' : ''}${connProp}=${dlt.at.opts.connection[connProp]}`;
+      }
+      dlt.at.opts.pool.connectionString = cstr;
     }
 
     dlt.at.errorLogger = errorLogger;
@@ -97,7 +118,7 @@ module.exports = class OdbcDialect {
         dlt.at.pool = await dlt.at.odbc.pool(dlt.at.opts.pool);
       }
       if (dlt.at.logger) {
-        dlt.at.logger(`ODBC: connection pool "${dlt.at.opts.id}" ${action} with (${numSql} SQL files) ` +
+        dlt.at.logger(`ODBC: Connection pool "${dlt.at.opts.id}" ${action} with (${numSql} SQL files) ` +
           `loginTimeout=${dlt.at.opts.pool.loginTimeout} incrementSize=${dlt.at.opts.pool.incrementSize} ` +
           `initialSize=${dlt.at.opts.pool.initialSize} maxSize=${dlt.at.opts.pool.maxSize} shrink=${dlt.at.opts.pool.shrink}`);
       }
@@ -123,9 +144,15 @@ module.exports = class OdbcDialect {
     const dlt = internal(this);
     if (dlt.at.connections[txId]) return;
     if (dlt.at.logger) {
-      dlt.at.logger(`ODBC: Beginning transaction on connection pool "${dlt.at.opts.id}"`);
+      dlt.at.logger(`ODBC: Beginning transaction "${txId}" on connection pool "${dlt.at.opts.id}"`);
     }
-    dlt.at.connections[txId] = await dlt.this.getConnection(dlt.at.pool, { transactionId: txId });
+    dlt.at.connections[txId] = await dlt.this.getConnection({ transactionId: txId });
+    try {
+      await dlt.at.connections[txId].beginTransaction();
+    } catch (err) {
+      delete dlt.at.connections[txId];
+      throw err;
+    }
   }
 
   /**
@@ -137,28 +164,53 @@ module.exports = class OdbcDialect {
    */
   async exec(sql, opts, frags) {
     const dlt = internal(this);
-    let conn, bndp = {}, rslts, xopts;
+    let conn, bndp = {}, ebndp = [], esql, rslts;
     try {
       // interpolate and remove unused binds since
       // ODBC only accepts the exact number of bind parameters (also, cuts down on payload bloat)
       bndp = dlt.at.track.interpolate(bndp, opts.binds, dlt.at.odbc, props => sql.includes(`:${props[0]}`));
 
-      conn = await dlt.this.getConnection(dlt.at.pool, opts);
-      const stmt = await conn.createStatement();
-      await stmt.prepare(sql);
-      await stmt.bind(bndp);
-      rslts = await conn.execute();
+      // odbc expects binds to be in an array
+      esql = sql.replace(/:(\w+)/g, (match, pname) => {
+        if (!bndp[pname]) throw new Error(`ODBC: Unbound "${pname}" at position ${ebndp.length}`);
+        ebndp.push(bndp[pname]);
+        return '?';
+      });
+
+      const isQuery = !opts.transactionId && opts.type === 'READ';
+      if (isQuery) {
+        rslts = await dlt.at.pool.query(esql, ebndp);
+      } else {
+        conn = await dlt.this.getConnection(opts);
+        if (opts.driverOptions && opts.driverOptions.hasOwnProperty('isolationLevel')) {
+          await conn.setIsolationLevel(opts.driverOptions.isolationLevel);
+        }
+        let stmt;
+        try {
+          stmt = await conn.createStatement();
+          await stmt.prepare(esql);
+          await stmt.bind(ebndp);
+          rslts = await conn.execute();
+        } finally {
+          if (stmt) await stmt.close();
+        }
+      }
 
       const rtn = {
-        rows: rslts.rows,
+        rows: rslts, // odbc returns an array rather than rslts.rows array
         raw: rslts
       };
-      if (opts.autoCommit) {
-        await operation(dlt, 'close', true, conn, opts)();
-      } else {
-        dlt.at.state.pending++;
-        rtn.commit = operation(dlt, 'commit', true, conn, opts);
-        rtn.rollback = operation(dlt, 'rollback', true, conn, opts);
+
+      if (!isQuery) {
+        if (opts.autoCommit) {
+          // ODBC has no option to autocommit during SQL execution
+          await operation(dlt, 'commit', true, conn, opts)();
+          await operation(dlt, 'close', true, conn, opts)();
+        } else {
+          dlt.at.state.pending++;
+          rtn.commit = operation(dlt, 'commit', true, conn, opts);
+          rtn.rollback = operation(dlt, 'rollback', true, conn, opts);
+        }
       }
       return rtn;
     } catch (err) {
@@ -174,10 +226,14 @@ module.exports = class OdbcDialect {
         dlt.at.errorLogger(`Failed to execute the following SQL: ${msg}\n${sql}`, err);
       }
       err.message += msg;
-      err.sql = sql;
-      err.sqlOptions = opts;
-      err.sqlBinds = bndp;
-      err.sqlResults = rslts;
+      err.sqlerOdbc = {
+        sql: sql,
+        odbcSql: esql,
+        options: opts,
+        binds: bndp,
+        odbcBinds: ebndp,
+        results: rslts
+      };
       throw err;
     }
   }
@@ -185,16 +241,15 @@ module.exports = class OdbcDialect {
   /**
    * Gets the currently open connection or a new connection when no transaction is in progress
    * @protected
-   * @param {Object} pool The connection pool
    * @param {OdbcExecOptions} [opts] The execution options
    * @returns {Object} The connection (when present)
    */
-  async getConnection(pool, opts) {
+  async getConnection(opts) {
     const dlt = internal(this);
     const txId = opts && opts.transactionId;
     let conn = txId ? dlt.at.connections[txId] : null;
     if (!conn) {
-      conn = await pool.connect();
+      conn = await dlt.at.pool.connect();
     }
     return conn;
   }
@@ -250,7 +305,7 @@ function operation(dlt, name, reset, conn, opts) {
     let error;
     try {
       if (!conn) {
-        conn = await pool.connect();
+        conn = await dlt.at.pool.connect();
       }
       if (conn && dlt.at.logger) {
         dlt.at.logger(`ODBC: Performing ${name} on connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
@@ -272,7 +327,11 @@ function operation(dlt, name, reset, conn, opts) {
         try {
           await conn.close();
         } catch (cerr) {
-          if (error) error.closeError = cerr;
+          if (error) {
+            error.sqlerOdbc = {
+              closeError: cerr
+            };
+          }
         }
       }
     }
