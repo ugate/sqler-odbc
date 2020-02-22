@@ -1,0 +1,26 @@
+{
+  "1-manual": {
+    "title": "Manual/Examples"
+  },
+  "2-mssql": {
+    "title": "SQL Server"
+  },
+  "3-oracle": {
+    "title": "Oracle DB"
+  },
+  "4-mysql": {
+    "title": "MySQL"
+  },
+  "5-postgres": {
+    "title": "PostgreSQL"
+  },
+  "6-cache": {
+    "title": "InterSystems Cache"
+  },
+  "7-other": {
+    "title": "Other Databases"
+  },
+  "8-testing": {
+    "title": "Testing"
+  }
+}
