@@ -11,7 +11,7 @@
 
 [ODBC](https://oracle.github.io/node-odbc) dialect for [`sqler`](https://github.com/ugate/sqler).
 
-- [Manual (w/compatibility matrix)](https://ugate.github.io/sqler-oracle/tutorial-1-manual.html)
-- [API Docs](https://ugate.github.io/sqler-oracle/module.exports.html)
-- [Testing](https://ugate.github.io/sqler-oracle/tutorial-8-testing.html)
-- [Examples](https://ugate.github.io/sqler-oracle/tutorial-1-manual.html#examples)
+- [Manual (w/compatibility matrix)](https://ugate.github.io/sqler-odbc/tutorial-1-manual.html)
+- [API Docs](https://ugate.github.io/sqler-odbc/module.exports.html)
+- [Testing](https://ugate.github.io/sqler-odbc/tutorial-8-testing.html)
+- [Examples](https://ugate.github.io/sqler-odbc/tutorial-1-manual.html#examples)
