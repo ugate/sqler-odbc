@@ -6,14 +6,17 @@
  * @property {Object} [driverOptions] The `odbc` module specific options.
  * @property {Object} [driverOptions.connection] An object that will contain properties/values that will be used to construct the ODBC connection string.
  * For example, `{ UID: 'someUsername', PWD: 'somePassword' }` would generate `UID=someUsername;PWD=somePassword`.
- * __Any {@link Manager~PrivateOptions} used will override the `driverOptions.connection` properties/values
- * (e.g. `priv = { username: 'someUser', password: 'somePwd' }` would override `driverOptions.connection = { UID: 'ignoreUser', PWD: 'ignorePwd' }`).
- * Likewise, `options.service = 'MyDSN'` will override `driverOptions.connection.DSN = 'IgnoreDSN'`.__
- * When a value is a string surrounded by `${}`, it will be assumed to be a _constant_ property that resides on the `odbc` module and will be interpolated
- * accordingly.
- * For example `driverOptions.connection.someProp = '${ODBC_CONSTANT}'` will be interpolated as `driverOptions.connection.someProp = odbc.ODBC_CONSTANT`.
+ * When a property value is a string surrounded by `${}`, it will be assumed to be a property that resides on either the {@link Manager~PrivateOptions}
+ * passed into the {@link Manager} constructor or a property on the {@link OdbcConnectionOptions} itself (in that order of precedence). For example, 
+ * `connOpts.service = 'SomeDSN'` and `driverOptions.connection.DSN = '${service}'` would be interpolated into `driverOptions.connection.DSN = 'SomeDSN'`. In
+ * contrast to `privOpts.username = 'someUsername' and `driverOptions.connection.UID = '${username}'` would be interpolated into
+ * `driverOptions.connection.UID = 'someUsername'`.
+ * Both of which would ultimately become the ODBC connection string `DSN=SomeDSN;UID=someUsername`.
+ * Interpoaltions can also contain more than one reference. For example, `driverOptions.connection.Server = '${protocol}:${host},${port}'` for 
+ * `privOpts = { protocol: 'TCP', host: 'example.com', port: 5400 }` would become `Server=TCP:example.com,5400` in the connection string
  * @property {Object} [driverOptions.pool] The pool `conf` options that will be passed into `odbc.pool(conf)`.
- * __Using any of the generic `pool.someOption` will override the `conf` options set on `driverOptions.pool`.__
+ * __Using any of the generic `pool.someOption` will override the `conf` options set on `driverOptions.pool`__ (e.g. `pool.max = 10` would override 
+ * `driverOptions.pool.maxSize = 20`).
  * When a value is a string surrounded by `${}`, it will be assumed to be a _constant_ property that resides on the `odbc` module and will be interpolated
  * accordingly.
  * For example `driverOptions.pool.someProp = '${ODBC_CONSTANT}'` will be interpolated as `pool.someProp = odbc.ODBC_CONSTANT`.
@@ -58,38 +61,13 @@ module.exports = class OdbcDialect {
     dlt.at.opts = {
       autoCommit: true, // default autoCommit = true to conform to sqler
       id: `sqlerOdbcGen${Math.floor(Math.random() * 10000)}`,
-      connection: connConf.driverOptions && connConf.driverOptions.connection ? dlt.at.track.interpolate({}, connConf.driverOptions.connection, dlt.at.odbc) : null,
+      connection: connConf.driverOptions && connConf.driverOptions.connection,
       pool: connConf.driverOptions && connConf.driverOptions.pool ? dlt.at.track.interpolate({}, connConf.driverOptions.pool, dlt.at.odbc) : {}
     };
     dlt.at.state = {
       pending: 0,
       connection: {}
     };
-
-    dlt.at.opts.pool.connectionString = '';
-    const connProp = (name, src, srcName, sensitive) => {
-      if (src.hasOwnProperty(srcName)) {
-        const append = srcName === 'host' && src.hasOwnProperty('port') ? `:${src.port}` : '';
-        dlt.at.opts.connection = dlt.at.opts.connection || {};
-        if (dlt.at.logger && dlt.at.opts.connection.hasOwnProperty(name)) {
-          dlt.at.logger(`ODBC: Overriding "driverOptions.connection.${name}${
-            sensitive ? '' : `=${dlt.at.opts.connection[name]}`}" with configured option value ${
-              sensitive ? `named "${srcName}"` : `"${srcName}=${src[srcName]}"` }`);
-        }
-        dlt.at.opts.connection[name] = `${src[srcName]}${append}`;
-      }
-    };
-    connProp('DSN', connConf, 'service');
-    connProp('SERVER', priv, 'host');
-    connProp('UID', priv, 'username');
-    connProp('PWD', priv, 'password', true);
-    if (dlt.at.opts.connection) {
-      let cstr = '';
-      for (let connProp in dlt.at.opts.connection) {
-        cstr += `${cstr ? ';' : ''}${connProp}=${dlt.at.opts.connection[connProp]}`;
-      }
-      dlt.at.opts.pool.connectionString = cstr;
-    }
 
     dlt.at.errorLogger = errorLogger;
     dlt.at.logger = logger;
@@ -100,6 +78,40 @@ module.exports = class OdbcDialect {
     dlt.at.opts.pool.connectionTimeout = connConf.pool ? connConf.pool.idle : null;
     dlt.at.opts.pool.incrementSize = connConf.pool ? connConf.pool.increment : null;
     dlt.at.opts.pool.loginTimeout = connConf.pool ? connConf.pool.timeout : null;
+
+    dlt.at.opts.pool.connectionString = '';
+    if (dlt.at.opts.connection) {
+      let cstr = '', val;
+      for (let connProp in dlt.at.opts.connection) {
+        val = dlt.at.opts.connection[connProp];
+        if (val && typeof val === 'string') {
+          // global shallow interpolation to allow multiple interpolated values
+          // in a single value (e.g. connection.Server = '${protocol}:${service},${port}')
+          // negates the need to use track.interpolate
+          val = val.replace(/\${\s*([A-Z_]+)\s*}/ig, (match, name) => {
+            if (connConf.hasOwnProperty(name)) {
+              if (typeof connConf[name] === 'object') {
+                throw new Error(`ODBC: Interpolation "${match}" references a non-transposable Object on connection options:\n${
+                  JSON.stringify(connConf, null, ' ')
+                }`);
+              }
+              return connConf[name];
+            }
+            if (priv.hasOwnProperty(name)) {
+              if (typeof priv[name] === 'object') {
+                throw new Error(`ODBC: Interpolation "${match}" references a non-transposable Object on private options:\n${
+                  JSON.stringify(priv, (key, val) => key === 'password' ? '***' : val, ' ')
+                }`);
+              }
+              return priv[name];
+            }
+            return match;
+          });
+        }
+        cstr += `${cstr ? ';' : ''}${connProp}=${val}`;
+      }
+      dlt.at.opts.pool.connectionString = cstr;
+    }
   }
 
   /**
@@ -190,7 +202,7 @@ module.exports = class OdbcDialect {
           stmt = await conn.createStatement();
           await stmt.prepare(esql);
           await stmt.bind(ebndp);
-          rslts = await conn.execute();
+          rslts = await stmt.execute();
         } finally {
           if (stmt) await stmt.close();
         }

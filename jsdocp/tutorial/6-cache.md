@@ -53,7 +53,7 @@ const conf = {
         "id": "myCacheDb",
         "name": "cache",
         "dir": "db/cache",
-        "service": "Lab", // service = DSN
+        "service": "Lab",
         "dialect": "odbc",
         "pool": {
           "min": 1,
@@ -61,8 +61,11 @@ const conf = {
           "increment": 1
         },
         "driverOptions": {
+          // ODBC connection string property names/values
+          // (ODBC vendor specific)
           "connection": {
-            // connection string parameters
+            // DSN interpolates into connections[0].service
+            "DSN": "${service}",
             "STATIC CURSORS": 1
           },
           "pool": {
@@ -102,7 +105,7 @@ async function runExample(conf) {
   await mgr.init();
 
   // execute the SQL statement and capture the results
-  const rslt = await mgr.db.cache.site.read.lab.departments({
+  const rslts = await mgr.db.cache.site.read.lab.departments({
     binds: {
       labDeptName: 'Blood'
     }
@@ -110,7 +113,7 @@ async function runExample(conf) {
 
   console.log('Lab Departments:', rslts.rows);
 
-  return { manager: mgr, result: rslt };
+  return { manager: mgr, result: rslts };
 }
 ```
 
@@ -132,10 +135,10 @@ async function runExample(conf) {
   let exec1, exec2;
   try {
     // set the transaction ID on the execution options
-    // so the SQL executions are invoked
-    // within the same transaction scope
+    // so the SQL executions are invoked within the
+    // same transaction scope from the connection pool
 
-    // execute within a transaction scope
+    // execute within a transaction scope, but don't commit
     // (i.e. autoCommit === false and transactionId = txId)
     exec1 = await mgr.db.cache.site.create.lab.departments({
       autoCommit: false,
@@ -151,7 +154,7 @@ async function runExample(conf) {
     // and commit after the satement has executed
     // (i.e. autoCommit === true and transactionId = txId)
     exec2 = await mgr.db.cache.site.create.lab.departments({
-      autoCommit: false,
+      autoCommit: true,
       transactionId: txId,
       binds: {
         id: 2,
