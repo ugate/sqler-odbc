@@ -39,6 +39,8 @@ WHERE UPPER(RO.optname) LIKE CONCAT(CONCAT('%', UPPER(:optName)), '%')
 Due to how data is transpoted via ODBC, dates may need to be bound as ANSI formatted strings such as a UTC format similar to the following:
 ```js
 const bindDate = new Date().toISOString().replace(/([TZ])/g, (match, chr) => (chr === 'T' && ' ') || '');
+var offset = new Date().getTimezoneOffset(), o = Math.abs(offset);
+    return (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
 // YYYY-MM-DD HH:mm:ss.fff
 ```
 

@@ -6,3 +6,6 @@
 .pkg-logo, .pkg-logo svg, .pkg-icons {
   fill: #ffffff !important;
 }
+th + th, td + td {
+  padding-left: 1rem;
+}
