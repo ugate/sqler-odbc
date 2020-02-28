@@ -1,0 +1,26 @@
+{
+  "db": {
+    "dialects": {
+      "odbc": "sqler-odbc"
+    },
+    "connections": [
+      {
+        "id": "oracle",
+        "name": "oracle",
+        "dir": "db/oracle",
+        "service": "OracleXE",
+        "dialect": "odbc",
+        "pool": {},
+        "driverOptions": {
+          "connection": {
+            "DSN": "${service}",
+            "FileUsage": 1
+          },
+          "pool": {
+            "shrink": true
+          }
+        }
+      }
+    ]
+  }
+}

@@ -36,8 +36,9 @@
     "jsdoc": "^3.6.3",
     "jsdocp": "^1.0.3",
     "minami": "^1.2.3",
+    "moment-db": "^1.0.2",
     "odbc": "^2.2.2",
-    "sqler": "^5.5.0"
+    "sqler": "^5.6.2"
   },
   "files": [
     "/index.js",

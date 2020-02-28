@@ -1,0 +1,15 @@
+{
+  "univ": {
+    "db": {
+      "cache": {},
+      "oracle": {
+        "username": "system",
+        "password": "oracl3local"
+      },
+      "mssql": {
+        "username":"sa",
+        "password": "sqlS3rv35local"
+      }
+    }
+  }
+}

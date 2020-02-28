@@ -172,9 +172,10 @@ module.exports = class OdbcDialect {
    * @param {String} sql the SQL to execute
    * @param {OdbcExecOptions} opts The execution options
    * @param {String[]} frags the frament keys within the SQL that will be retained
+   * @param {(Manager~ExecErrorOptions | Boolean)} [errorOpts] The error options to use
    * @returns {Dialect~ExecResults} The execution results
    */
-  async exec(sql, opts, frags) {
+  async exec(sql, opts, frags, errorOpts) {
     const dlt = internal(this);
     let conn, bndp = {}, ebndp = [], esql, rslts;
     try {
@@ -233,19 +234,14 @@ module.exports = class OdbcDialect {
           err.closeError = cerr;
         }
       }
-      const msg = ` (BINDS: ${JSON.stringify(bndp)}, FRAGS: ${frags ? Array.isArray(frags) ? frags.join(', ') : frags : 'N/A'})`;
+      const msg = ` (BINDS: ${Object.keys(bndp)}, FRAGS: ${frags ? Array.isArray(frags) ? frags.join(', ') : frags : 'N/A'})`;
       if (dlt.at.errorLogger) {
-        dlt.at.errorLogger(`Failed to execute the following SQL: ${msg}\n${sql}`, err);
+        dlt.at.errorLogger(`Failed to execute the following SQL: ${sql}`, err);
       }
       err.message += msg;
-      err.sqlerOdbc = {
-        sql: sql,
-        odbcSql: esql,
-        options: opts,
-        binds: bndp,
-        odbcBinds: ebndp,
-        results: rslts
-      };
+      err.sqler = err.sqler || {};
+      err.sqler.sqlODBC = esql;
+      //err.sqler.bindsODBC = errorOpts && errorOpts.includeBindValues ? ebndp : Object.keys(bndp);
       throw err;
     }
   }

@@ -1,0 +1,27 @@
+{
+  "db": {
+    "dialects": {
+      "odbc": "sqler-odbc"
+    },
+    "connections": [
+      {
+        "id": "mssql",
+        "name": "mssql",
+        "dir": "db/mssql",
+        "service": "SqlServer",
+        "dialect": "odbc",
+        "pool": {},
+        "driverOptions": {
+          "connection": {
+            "DSN": "${service}",
+            "UID": "${username}",
+            "PWD": "${password}"
+          },
+          "pool": {
+            "shrink": true
+          }
+        }
+      }
+    ]
+  }
+}

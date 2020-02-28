@@ -1,4 +1,6 @@
-### 💡 [InterSystems Cachè](https://www.intersystems.com/products/cache/) Examples:
+### 💡 [InterSystems Cachè](https://www.intersystems.com/products/cache/):
+
+#### Setup:<sub id="setup"></sub>
 
 __Install the drivers from [ftp.intersystems.com](ftp://ftp.intersystems.com/pub/cache/odbc)__
 
@@ -33,50 +35,24 @@ Service Principal Name=example.com
 [Default]
 Driver=/usr/cachesys/bin/libcacheodbc35.so
 ```
+#### Examples:<sub id="examples"></sub>
 
 The examples below use the following setup:
+
+__[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~PrivateOptions)__ (appended to the subsequent connection options)
+```jsdocp ./test/conf/priv.json
+```
+
+> __NOTE:__ `univ.db.cache` does not require any additional private properties since the Cachè ODBC driver only requires the `DSN` in the connection options
+
+__[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
+```jsdocp ./test/conf/cache.json
+```
+
+> __NOTE:__ [`db.connections.driverOptions.connection.DSN`](global.html#OdbcConnectionOptions) interpolates into `db.connections[].service`
+
 ```js
-const conf = {
-  "univ": {
-    "db": {
-      // really don't need any private data when the
-      // Data Source contains the connection credentials
-      "myCacheDb": {}
-    }
-  },
-  "db": {
-    "dialects": {
-      "odbc": "sqler-odbc"
-    },
-    "connections": [
-      {
-        "id": "myCacheDb",
-        "name": "cache",
-        "dir": "db/cache",
-        "service": "Lab",
-        "dialect": "odbc",
-        "pool": {
-          "min": 1,
-          "max": 4,
-          "increment": 1
-        },
-        "driverOptions": {
-          // ODBC connection string property names/values
-          // (ODBC vendor specific)
-          "connection": {
-            // DSN interpolates into connections[0].service
-            "DSN": "${service}",
-            "STATIC CURSORS": 1
-          },
-          "pool": {
-            // odbc module specific pool options
-            "shrink": true
-          }
-        }
-      }
-    ]
-  }
-};
+// assume conf is set to the forementioned configuration
 
 // see subsequent examples for different examples
 const { manager, result } = await runExample(conf);
@@ -91,12 +67,8 @@ process.on('SIGINT', async function sigintDB() {
 ```
 
 __Read:__
-```sql
+```jsdocp ./test/db/cache/site/read.lab.departments.sql
 -- db/cache/site/read.lab.departments.sql
-SELECT DP.ID AS "id", DP.LabDeptCode AS "code", DP.LabDeptName AS "name"
-FROM SITE.MA_LabDept DP
-WHERE UPPER(DP.LabDeptName) LIKE UPPER('%' || :labDeptName || '%')
-ORDER BY DP.LabDeptName ASC
 ```
 ```js
 async function runExample(conf) {
@@ -118,10 +90,8 @@ async function runExample(conf) {
 ```
 
 __Create:__
-```sql
+```jsdocp ./test/db/cache/site/create.lab.departments.sql
 -- db/cache/site/create.lab.departments.sql
-INSERT INTO MA_LabDept (ID, LabDeptName, LabDeptCode)
-VALUES (:id, :name, :code)
 ```
 ```js
 async function runExample(conf) {

@@ -1,8 +1,10 @@
 ### 💡 [Oracle Database](https://www.oracle.com/database/):
 
-Alternatively, [sqler-oracle](https://www.npmjs.com/package/sqler-oracle) can be used instead of ODBC.
+> Alternatively, [sqler-oracle](https://www.npmjs.com/package/sqler-oracle) can be used instead of ODBC.
 
-__Install the [ODBC Instant Client](https://www.oracle.com/database/technologies/releasenote-odbc-ic.html)__
+#### Setup:<sub id="setup"></sub>
+
+__Install the [Oracle Instant Client &amp; ODBC Instant Client](https://www.oracle.com/database/technologies/releasenote-odbc-ic.html)__ (latet versions seems to work best)
 
 __Windows ODBC Data Source__
 
@@ -23,7 +25,10 @@ UserID = xe
 Password = myOraclePwd
 ```
 
+#### Examples:<sub id="examples"></sub>
+
 The examples below use the following setup:
+
 ```js
 const conf = {
   "univ": {

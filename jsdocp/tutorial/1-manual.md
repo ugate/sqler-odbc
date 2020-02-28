@@ -46,7 +46,7 @@ Using the forementioned notation, the following data types can be used on ODBC d
 | INTERVAL YEAR TO MONTH    | `[+|-]YEARS-MM`                         | `+130-01`
 | INTERVAL DAY TO SECONDS   | `[+|-]DAYS HH:MI:SS.FFF`                | `-47482 12:01:20.903`
 
-> __NOTE: The [`moment-db`](https://www.npmjs.com/package/moment-db) can be used to assist with ANSI compatible database date formatting__
+> __NOTE: The [`moment-db` module](https://www.npmjs.com/package/moment-db) can be used to assist with ANSI compatible database date formatting__
 
 ### 💡 Examples<sub id="examples"></sub>:
 
