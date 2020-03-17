@@ -29,66 +29,25 @@ Password = myOraclePwd
 
 The examples below use the following setup:
 
-```js
-const conf = {
-  "univ": {
-    "db": {
-      // really don't need any private data when the
-      // Data Source contains the connection credentials
-      "myOracleDb": {}
-    }
-  },
-  "db": {
-    "dialects": {
-      "odbc": "sqler-odbc"
-    },
-    "connections": [
-      {
-        "id": "myOracleDb",
-        "name": "oracle",
-        "dir": "db/oracle",
-        "service": "Test", // service = DSN
-        "dialect": "odbc",
-        "pool": {
-          "min": 1,
-          "max": 4,
-          "increment": 1
-        },
-        "driverOptions": {
-          "connection": {
-            // connection string parameters
-            "FileUsage": 1
-          },
-          "pool": {
-            // odbc module specific pool options
-            "shrink": true
-          }
-        }
-      }
-    ]
-  }
-};
+__[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~PrivateOptions)__ (appended to the subsequent connection options, shows other connections for illustration purposes)
+```jsdocp ./test/fixtures/priv.json
+```
 
-// see subsequent examples for different examples
-const { manager, result } = await runExample(conf);
+__[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
+```jsdocp ./test/fixtures/oracle/oracle.json
+```
 
-console.log('Result:', result);
+> __NOTE:__ [`db.connections.driverOptions.connection`](global.html#OdbcConnectionOptions) for `DSN` interpolates into `db.connections[].service`
 
-// after we're done using the manager we should close it
-process.on('SIGINT', async function sigintDB() {
-  await manager.close();
-  console.log('Manager has been closed');
-});
+Test code that illustrates how to use Oracle + ODBC with various examples
+```jsdocp ./test/fixtures/run-example.js
 ```
 
 __Read:__
-```sql
--- db/oracle/hr/read.countries.sql
-SELECT CO.COUNTRY_ID AS "id", CO.COUNTRY_NAME AS "name"
-FROM HR.COUNTRIES CO
-WHERE UPPER(CO.COUNTRY_NAME) LIKE UPPER('%' || :name || '%')
-ORDER BY CO.COUNTRY_NAME ASC
+```jsdocp ./test/db/oracle/read.table.rows.sql
+-- db/oracle/read.table.rows.sql
 ```
+
 ```js
 async function runExample(conf) {
   const mgr = new Manager(conf);

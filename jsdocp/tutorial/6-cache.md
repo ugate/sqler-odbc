@@ -39,31 +39,20 @@ Driver=/usr/cachesys/bin/libcacheodbc35.so
 
 The examples below use the following setup:
 
-__[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~PrivateOptions)__ (appended to the subsequent connection options)
-```jsdocp ./test/conf/priv.json
+__[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~PrivateOptions)__ (appended to the subsequent connection options, shows other connections for illustration purposes)
+```jsdocp ./test/fixtures/priv.json
 ```
 
 > __NOTE:__ `univ.db.cache` does not require any additional private properties since the Cachè ODBC driver only requires the `DSN` in the connection options
 
 __[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
-```jsdocp ./test/conf/cache.json
+```jsdocp ./test/fixtures/cache/cache.json
 ```
 
 > __NOTE:__ [`db.connections.driverOptions.connection.DSN`](global.html#OdbcConnectionOptions) interpolates into `db.connections[].service`
 
-```js
-// assume conf is set to the forementioned configuration
-
-// see subsequent examples for different examples
-const { manager, result } = await runExample(conf);
-
-console.log('Result:', result);
-
-// after we're done using the manager we should close it
-process.on('SIGINT', async function sigintDB() {
-  await manager.close();
-  console.log('Manager has been closed');
-});
+Test code that illustrates how to use Cachè + ODBC with various examples
+```jsdocp ./test/fixtures/run-example.js
 ```
 
 __Read:__
