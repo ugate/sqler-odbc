@@ -1,6 +1,6 @@
 UPDATE TEST
 SET NAME = :name, UPDATED_AT = :updated
-WHERE ID = :id
+WHERE ID = :id;
 UPDATE TEST2
 SET NAME = :name2, UPDATED_AT = :updated2
 WHERE ID = :id2

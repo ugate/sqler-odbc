@@ -11,7 +11,7 @@ module.exports = async function runExample(manager, connName) {
   const date = new Date().toISOString().replace('T', ' ').replace('Z', '');
 
   // The odbc module currently doesn't support Fs.ReadStream/Fs.createReadStream()
-  const report = Fs.readFileSync('./test/files/audit-report.png');
+  const report = await Fs.promises.readFile('./test/files/audit-report.png');
 
   // Insert rows into multiple tables within a single ODBC execution
   const rslt = await manager.db[connName].create.table.rows({

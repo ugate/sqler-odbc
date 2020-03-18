@@ -21,8 +21,8 @@ const plan = `Oracle DB Manager`;
 
 // node test/lib/main.js someTestFunction -NODE_ENV=test
 
-// "node_modules/.bin/lab" test/main.js -v
-// "node_modules/.bin/lab" test/main.js -vi 1
+// "node_modules/.bin/lab" test/main.test.js -v
+// "node_modules/.bin/lab" test/main.test.js -vi 1
 
 lab.experiment(plan, () => {
   

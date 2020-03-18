@@ -107,11 +107,11 @@ class Tester {
     let rslti = -1, lastUpdate;
 
     // expect CRUD results
-    const crudly = (rslt, label, nameIncl) => {
+    const crudly = (rslt, label, nameIncl, count = 2) => {
       if (!rslt.rows) return;
       expect(rslt.rows, `CRUD ${label} rows`).array();
       if (!label.includes('read')) return;
-      expect(rslt.rows, `CRUD ${label} rows.length`).length(2);
+      expect(rslt.rows, `CRUD ${label} rows.length`).length(count);
       let updated;
       for (let row of rslt.rows) {
         expect(row, `CRUD ${label} row`).object();
@@ -119,6 +119,7 @@ class Tester {
         updated = new Date(row.updated) || row.updated;
         expect(updated, `CRUD ${label} row.updated`).date();
         if (lastUpdate) expect(updated, `CRUD ${label} row.updated > lastUpdated`).greaterThan(lastUpdate);
+        //if (row.has) expect(row.report)
       }
       lastUpdate = updated;
     };
@@ -138,10 +139,20 @@ class Tester {
     rslts[++rslti] = await read(priv.mgr, priv.dialect);
     crudly(rslts[rslti], 'update read', 'UPDATE');
 
+    const del = getCrudOp('delete', priv.dialect);
+    rslts[++rslti] = await del(priv.mgr, priv.dialect);
+    crudly(rslts[rslti], 'delete');
+
+    rslts[++rslti] = await read(priv.mgr, priv.dialect);
+    crudly(rslts[rslti], 'delete read', null, 0);
+
     if (LOGGER.debug) LOGGER.debug(`CRUD ${priv.dialect} execution results:`, ...rslts);
     return rslts;
   }
 }
+
+// TODO : ESM comment the following line...
+module.exports = Tester;
 
 /**
  * Generates a configuration

@@ -84,6 +84,15 @@ __Update Rows:__
 ```jsdocp ./test/lib/mssql/update.table.rows.js
 ```
 
+__Delete Rows:__
+
+```jsdocp ./test/db/mssql/delete.table.rows.sql
+-- db/mssql/delete.table.rows.sql
+```
+
+```jsdocp ./test/lib/mssql/delete.table.rows.js
+```
+
 __Delete Table:__
 
 ```jsdocp ./test/db/mssql/setup/delete.tables.sql
