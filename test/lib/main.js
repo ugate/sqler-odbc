@@ -119,7 +119,18 @@ class Tester {
         updated = new Date(row.updated) || row.updated;
         expect(updated, `CRUD ${label} row.updated`).date();
         if (lastUpdate) expect(updated, `CRUD ${label} row.updated > lastUpdated`).greaterThan(lastUpdate);
-        //if (row.has) expect(row.report)
+        // TODO : expect for binary report?
+        // write the report(s) to file?
+        // let report, fpth;
+        // for (let row of rslt.rows) {
+        //   report = row.report;
+        //   if (report) {
+        //     // SQL Server stores varbinary as hexadecimal of base64 encoded images
+        //     //report = Buffer.from(Buffer.from(report).toString('utf8')).toString('base64');
+        //     fpth = `${Os.tmpdir()}/sqler-odbc-${connName}-read-${row.id}.png`;
+        //     await Fs.promises.writeFile(fpth, report);
+        //   }
+        // }
       }
       lastUpdate = updated;
     };
