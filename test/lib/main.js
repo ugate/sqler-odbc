@@ -18,7 +18,9 @@ const priv = {
   cache: null,
   rowCount: 2,
   mgrLogit: !!LOGGER.info,
-  dialect: 'mssql', // change the dialect to run `node test/lib/main.js crud` for different DBs
+  // TODO : oracle "Error: [odbc] Error executing the statement" for create.table.rows.sql (multiple statements)
+  // change the dialect to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
+  dialect: process.env.SQLER_ODBC_DIALECT || 'mysql',
   conf: {}
 };
 

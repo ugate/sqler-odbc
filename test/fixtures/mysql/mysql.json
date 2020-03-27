@@ -5,18 +5,18 @@
     },
     "connections": [
       {
-        "id": "oracle",
-        "name": "oracle",
-        "dir": "db/oracle",
-        "service": "OracleXE",
+        "id": "mysql",
+        "name": "mysql",
+        "dir": "db/mysql",
+        "service": "MySQL",
         "dialect": "odbc",
         "pool": {},
         "driverOptions": {
           "connection": {
             "DSN": "${service}",
-            "UID": "system",
-            "PWD": "oracl3local",
-            "FileUsage": 1
+            "UID": "${username}",
+            "PWD": "${password}",
+            "MULTI_STATEMENTS": 1
           },
           "pool": {
             "shrink": true

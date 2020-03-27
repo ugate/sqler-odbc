@@ -12,17 +12,8 @@ __Windows ODBC Data Source__
 
 ![Windows ODBC Data Source 2](./img/odbc-oracle-ds2.jpg "Windows ODBC Data Source 2")
 
-__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/)__
-```bash
-[ODBC Data Sources]
-Test=Test
-
-[Test]
-Driver = /usr/lib/oracle/18.4.0.0.0/client/lib/libsqora.so.18.4
-DSN = Test
-ServerName = XE
-UserID = xe
-Password = myOraclePwd
+__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/) ([Oracle  ODBC Connection Parameters](https://docs.oracle.com/cd/E17952_01/connector-odbc-en/connector-odbc-configuration-connection-parameters.html))__
+```jsdocp ./test/fixtures/oracle/odbc.ini
 ```
 
 #### Examples:<sub id="examples"></sub>
@@ -43,28 +34,58 @@ Test code that illustrates how to use Oracle + ODBC with various examples
 ```jsdocp ./test/fixtures/run-example.js
 ```
 
-__Read:__
+__Create Table:__
+
+```jsdocp ./test/db/oracle/setup/create.tables.sql
+-- db/oracle/setup/create.tables.sql
+```
+
+```jsdocp ./test/lib/oracle/setup/create.tables.js
+```
+
+__Create Rows:__
+
+```jsdocp ./test/db/oracle/create.table.rows.sql
+-- db/oracle/create.table.rows.sql
+```
+
+```jsdocp ./test/lib/oracle/create.table.rows.js
+```
+
+__Read Rows:__
+
 ```jsdocp ./test/db/oracle/read.table.rows.sql
 -- db/oracle/read.table.rows.sql
 ```
 
-```js
-async function runExample(conf) {
-  const mgr = new Manager(conf);
-  // initialize connections and set SQL functions
-  await mgr.init();
+```jsdocp ./test/lib/oracle/read.table.rows.js
+```
 
-  // execute the SQL statement and capture the results
-  const rslt = await mgr.db.oracle.hr.read.countries({
-    binds: {
-      name: 'United'
-    }
-  });
+__Update Rows:__
 
-  console.log('Countries:', rslts.rows);
+```jsdocp ./test/db/oracle/update.table.rows.sql
+-- db/oracle/update.table.rows.sql
+```
 
-  return { manager: mgr, result: rslt };
-}
+```jsdocp ./test/lib/oracle/update.table.rows.js
+```
+
+__Delete Rows:__
+
+```jsdocp ./test/db/oracle/delete.table.rows.sql
+-- db/oracle/delete.table.rows.sql
+```
+
+```jsdocp ./test/lib/oracle/delete.table.rows.js
+```
+
+__Delete Table:__
+
+```jsdocp ./test/db/oracle/setup/delete.tables.sql
+-- db/oracle/setup/delete.tables.sql
+```
+
+```jsdocp ./test/lib/oracle/setup/delete.tables.js
 ```
 
 __Create:__

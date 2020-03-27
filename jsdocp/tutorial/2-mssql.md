@@ -18,16 +18,8 @@ __Windows ODBC Data Source__
 
 ![Windows ODBC Data Source 5](./img/odbc-mssql-ds5.jpg "Windows ODBC Data Source 5")
 
-__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/)__
-```bash
-[ODBC Data Sources]
-SqlServerXE=SqlServerXE
-
-[SqlServerXE]
-Driver = ODBC Driver SQL Server  
-Server = 127.0.0.1
-UID = sa
-PWD = sqlS3rv35local
+__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/) ([SQL Server ODBC Connection Parameters](https://docs.microsoft.com/en-us/sql/connect/odbc/dsn-connection-string-attribute?view=sql-server-ver15))__
+```jsdocp ./test/fixtures/mssql/odbc.ini
 ```
 
 #### Examples:<sub id="examples"></sub>

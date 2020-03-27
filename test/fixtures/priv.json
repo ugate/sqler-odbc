@@ -2,13 +2,17 @@
   "univ": {
     "db": {
       "cache": {},
+      "mssql": {
+        "username":"sa",
+        "password": "sqlS3rv35local"
+      },
       "oracle": {
         "username": "system",
         "password": "oracl3local"
       },
-      "mssql": {
-        "username":"sa",
-        "password": "sqlS3rv35local"
+      "mysql": {
+        "username":"root",
+        "password": "my3qllocal"
       }
     }
   }

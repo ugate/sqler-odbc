@@ -91,7 +91,7 @@ module.exports = class OdbcDialect {
           val = val.replace(/\${\s*([A-Z_]+)\s*}/ig, (match, name) => {
             if (connConf.hasOwnProperty(name)) {
               if (typeof connConf[name] === 'object') {
-                throw new Error(`ODBC: Interpolation "${match}" references a non-transposable Object on connection options:\n${
+                throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on connection options:\n${
                   JSON.stringify(connConf, null, ' ')
                 }`);
               }
@@ -99,7 +99,7 @@ module.exports = class OdbcDialect {
             }
             if (priv.hasOwnProperty(name)) {
               if (typeof priv[name] === 'object') {
-                throw new Error(`ODBC: Interpolation "${match}" references a non-transposable Object on private options:\n${
+                throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on private options:\n${
                   JSON.stringify(priv, (key, val) => key === 'password' ? '***' : val, ' ')
                 }`);
               }
@@ -130,13 +130,13 @@ module.exports = class OdbcDialect {
         dlt.at.pool = await dlt.at.odbc.pool(dlt.at.opts.pool);
       }
       if (dlt.at.logger) {
-        dlt.at.logger(`ODBC: Connection pool "${dlt.at.opts.id}" ${action} with (${numSql} SQL files) ` +
+        dlt.at.logger(`sqler-odbc: Connection pool "${dlt.at.opts.id}" ${action} with (${numSql} SQL files) ` +
           `loginTimeout=${dlt.at.opts.pool.loginTimeout} incrementSize=${dlt.at.opts.pool.incrementSize} ` +
           `initialSize=${dlt.at.opts.pool.initialSize} maxSize=${dlt.at.opts.pool.maxSize} shrink=${dlt.at.opts.pool.shrink}`);
       }
       return dlt.at.pool;
     } catch (err) {
-      const msg = `ODBC: connection pool "${dlt.at.opts.id}" could not be ${action}`;
+      const msg = `sqler-odbc: connection pool "${dlt.at.opts.id}" could not be ${action}`;
       if (dlt.at.errorLogger) dlt.at.errorLogger(`${msg} ${JSON.stringify(err, null, ' ')}`);
       const pconf = Object.assign({}, dlt.at.opts.pool);
       // mask sensitive data
@@ -156,7 +156,7 @@ module.exports = class OdbcDialect {
     const dlt = internal(this);
     if (dlt.at.connections[txId]) return;
     if (dlt.at.logger) {
-      dlt.at.logger(`ODBC: Beginning transaction "${txId}" on connection pool "${dlt.at.opts.id}"`);
+      dlt.at.logger(`sqler-odbc: Beginning transaction "${txId}" on connection pool "${dlt.at.opts.id}"`);
     }
     dlt.at.connections[txId] = await dlt.this.getConnection({ transactionId: txId });
     try {
@@ -184,8 +184,8 @@ module.exports = class OdbcDialect {
       bndp = dlt.at.track.interpolate(bndp, opts.binds, dlt.at.odbc, props => sql.includes(`:${props[0]}`));
 
       // odbc expects binds to be in an array
-      esql = sql.replace(/:(\w+)/g, (match, pname) => {
-        if (!bndp[pname]) throw new Error(`ODBC: Unbound "${pname}" at position ${ebndp.length}`);
+      esql = sql.replace(/:(\w+)(?=([^'\\]*(\\.|'([^'\\]*\\.)*[^'\\]*'))*[^']*$)/g, (match, pname) => {
+        if (!bndp[pname]) throw new Error(`sqler-odbc: Unbound "${pname}" at position ${ebndp.length}`);
         ebndp.push(bndp[pname]);
         return '?';
       });
@@ -234,7 +234,7 @@ module.exports = class OdbcDialect {
           err.closeError = cerr;
         }
       }
-      const msg = ` (BINDS: ${Object.keys(bndp)}, FRAGS: ${frags ? Array.isArray(frags) ? frags.join(', ') : frags : 'N/A'})`;
+      const msg = ` (BINDS: [${Object.keys(bndp)}], FRAGS: ${frags ? Array.isArray(frags) ? frags.join(', ') : frags : 'N/A'})`;
       if (dlt.at.errorLogger) {
         dlt.at.errorLogger(`Failed to execute the following SQL: ${sql}`, err);
       }
@@ -270,13 +270,13 @@ module.exports = class OdbcDialect {
     const dlt = internal(this);
     try {
       if (dlt.at.logger) {
-        dlt.at.logger(`ODBC: Closing connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
+        dlt.at.logger(`sqler-odbc: Closing connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
       }
       if (dlt.at.pool) await dlt.at.pool.close();
       return dlt.at.state.pending;
     } catch (err) {
       if (dlt.at.errorLogger) {
-        dlt.at.errorLogger(`ODBC: Failed to close connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`, err);
+        dlt.at.errorLogger(`sqler-odbc: Failed to close connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`, err);
       }
       throw err;
     }
@@ -316,7 +316,7 @@ function operation(dlt, name, reset, conn, opts) {
         conn = await dlt.at.pool.connect();
       }
       if (conn && dlt.at.logger) {
-        dlt.at.logger(`ODBC: Performing ${name} on connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
+        dlt.at.logger(`sqler-odbc: Performing ${name} on connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
       }
       if (conn) await conn[name]();
       if (reset) {
@@ -326,7 +326,7 @@ function operation(dlt, name, reset, conn, opts) {
     } catch (err) {
       error = err;
       if (dlt.at.errorLogger) {
-        dlt.at.errorLogger(`ODBC: Failed to ${name} ${dlt.at.state.pending} transaction(s) with options: ${
+        dlt.at.errorLogger(`sqler-odbc: Failed to ${name} ${dlt.at.state.pending} transaction(s) with options: ${
           opts ? JSON.stringify(opts) : 'N/A'}`, error);
       }
       throw error;
