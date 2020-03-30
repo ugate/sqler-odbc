@@ -4,34 +4,14 @@ __Install the drivers from [ftp.intersystems.com](ftp://ftp.intersystems.com/pub
 
 __Windows ODBC Data Source__
 
-![Windows ODBC Data Source 1](./img/odbc-cache-ds1.jpg "Windows ODBC Data Source 1")
+If installing PostgreSQL using [Stack Builder](https://www.enterprisedb.com/docs/en/9.3/pginstguide/PostgreSQL_Installation_Guide-08.htm), select the ODBC driver from the available drivers and follow the prompts to install them. Otherwise, the ODBC drivers can be download separately from [here](https://odbc.postgresql.org/).
 
-![Windows ODBC Data Source 2](./img/odbc-cache-ds2.jpg "Windows ODBC Data Source 2")
+![Windows ODBC Data Source 1](./img/odbc-postgresql-ds1.jpg "Windows ODBC Data Source 1")
 
-__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/)__
-```bash
-[ODBC Data Sources]
-Lab=Lab
+![Windows ODBC Data Source 2](./img/odbc-postgresql-ds2.jpg "Windows ODBC Data Source 2")
 
-[Lab]
-Driver=/usr/cachesys/bin/libcacheodbc35.so
-Description=Lab
-Host=example.com
-Namespace=LAB
-UID=lab
-Password=labExamplePwd
-Port=41000
-Protocol=TCP
-Query Timeout=1
-Static Cusrsors=0
-Trace=off
-TraceFile=iodbctrace.log
-Authentication Method=0
-Security Level=2
-Service Principal Name=example.com
-
-[Default]
-Driver=/usr/cachesys/bin/libcacheodbc35.so
+__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/) ([PostgreSQL ODBC Connection Parameters](https://odbc.postgresql.org/docs/config-opt.html))__
+```jsdocp ./test/fixtures/postgresql/odbc.ini
 ```
 
 The examples below use the following setup:

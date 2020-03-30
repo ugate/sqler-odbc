@@ -1,8 +1,5 @@
 'use strict';
 
-const Fs = require('fs');
-const Os = require('os');
-
 // export just to illustrate module usage
 module.exports = async function runExample(manager, connName) {
 

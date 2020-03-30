@@ -12,7 +12,7 @@ __Windows ODBC Data Source__
 
 ![Windows ODBC Data Source 2](./img/odbc-oracle-ds2.jpg "Windows ODBC Data Source 2")
 
-__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/) ([Oracle  ODBC Connection Parameters](https://docs.oracle.com/cd/E17952_01/connector-odbc-en/connector-odbc-configuration-connection-parameters.html))__
+__UNIX `/etc/odbc.ini` [`unixODBC`](http://www.unixodbc.org/) ([Oracle ODBC Connection Parameters](https://docs.oracle.com/cd/E17952_01/connector-odbc-en/connector-odbc-configuration-connection-parameters.html))__
 ```jsdocp ./test/fixtures/oracle/odbc.ini
 ```
 

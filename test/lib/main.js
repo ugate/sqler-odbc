@@ -106,7 +106,7 @@ class Tester {
    */
   static async crud() {
     const rslts = new Array(3);
-    let rslti = -1, lastUpdate;
+    let rslti = -1, lastUpdated;
 
     // expect CRUD results
     const crudly = (rslt, label, nameIncl, count = 2) => {
@@ -120,7 +120,7 @@ class Tester {
         if (nameIncl) expect(row.name, `CRUD ${label} row.name`).includes(nameIncl);
         updated = new Date(row.updated) || row.updated;
         expect(updated, `CRUD ${label} row.updated`).date();
-        if (lastUpdate) expect(updated, `CRUD ${label} row.updated > lastUpdated`).greaterThan(lastUpdate);
+        if (lastUpdated) expect(updated, `CRUD ${label} row.updated > lastUpdated`).greaterThan(lastUpdated);
         // TODO : expect for binary report?
         // write the report(s) to file?
         // let report, fpth;
@@ -134,7 +134,7 @@ class Tester {
         //   }
         // }
       }
-      lastUpdate = updated;
+      lastUpdated = updated;
     };
 
     const create = getCrudOp('create', priv.dialect);

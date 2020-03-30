@@ -1,7 +1,6 @@
 {
   "univ": {
     "db": {
-      "cache": {},
       "mssql": {
         "username":"sa",
         "password": "sqlS3rv35local"
@@ -13,7 +12,12 @@
       "mysql": {
         "username":"root",
         "password": "my3qllocal"
-      }
+      },
+      "postgresql": {
+        "username":"postgres",
+        "password": "p0stgr3slocal"
+      },
+      "cache": {}
     }
   }
 }
