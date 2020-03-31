@@ -4,6 +4,8 @@ __Install the drivers from the [MySQL website](https://dev.mysql.com/downloads/c
 
 __Windows ODBC Data Source__
 
+Configure the ODBC driver via the [ODBC Data Source Administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator):
+
 ![Windows ODBC Data Source 1](./img/odbc-mysql-ds1.jpg "Windows ODBC Data Source 1")
 
 ![Windows ODBC Data Source 2](./img/odbc-mysql-ds2.jpg "Windows ODBC Data Source 2")
@@ -21,7 +23,7 @@ __[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~P
 ```
 
 __[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
-```jsdocp ./test/fixtures/mysql/mysql.json
+```jsdocp ./test/fixtures/mysql/conf.json
 ```
 
 > __NOTE:__ [`db.connections.driverOptions.connection`](global.html#OdbcConnectionOptions) for `DSN` interpolates into `db.connections[].service`

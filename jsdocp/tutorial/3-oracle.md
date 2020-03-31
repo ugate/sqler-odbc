@@ -8,6 +8,8 @@ __Install the [Oracle Instant Client &amp; ODBC Instant Client](https://www.orac
 
 __Windows ODBC Data Source__
 
+Configure the ODBC driver via the [ODBC Data Source Administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator):
+
 ![Windows ODBC Data Source 1](./img/odbc-oracle-ds1.jpg "Windows ODBC Data Source 1")
 
 ![Windows ODBC Data Source 2](./img/odbc-oracle-ds2.jpg "Windows ODBC Data Source 2")
@@ -25,7 +27,7 @@ __[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~P
 ```
 
 __[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
-```jsdocp ./test/fixtures/oracle/oracle.json
+```jsdocp ./test/fixtures/oracle/conf.json
 ```
 
 > __NOTE:__ [`db.connections.driverOptions.connection`](global.html#OdbcConnectionOptions) for `DSN` interpolates into `db.connections[].service`

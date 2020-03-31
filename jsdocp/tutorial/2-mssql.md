@@ -8,6 +8,8 @@ __Install the [SQL Server ODBC Drivers](https://docs.microsoft.com/en-us/sql/con
 
 __Windows ODBC Data Source__
 
+Configure the ODBC driver via the [ODBC Data Source Administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator):
+
 ![Windows ODBC Data Source 1](./img/odbc-mssql-ds1.jpg "Windows ODBC Data Source 1")
 
 ![Windows ODBC Data Source 2](./img/odbc-mssql-ds2.jpg "Windows ODBC Data Source 2")
@@ -31,7 +33,7 @@ __[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~P
 ```
 
 __[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
-```jsdocp ./test/fixtures/mssql/mssql.json
+```jsdocp ./test/fixtures/mssql/conf.json
 ```
 
 > __NOTE:__ [`db.connections.driverOptions.connection`](global.html#OdbcConnectionOptions) for `DSN` interpolates into `db.connections[].service` while `UID` and `PWD` interpolate to properties on `univ.db.mssql` set on the private options configuration. A complete listing of available SQL Server connection string attributes for use on [`options.driverOptions.connection`](global.html#OdbcConnectionOptions) can be found [here](https://docs.microsoft.com/en-us/sql/connect/odbc/dsn-connection-string-attribute).

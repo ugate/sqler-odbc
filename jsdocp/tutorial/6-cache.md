@@ -6,6 +6,8 @@ __Install the drivers from [ftp.intersystems.com](ftp://ftp.intersystems.com/pub
 
 __Windows ODBC Data Source__
 
+Configure the ODBC driver via the [ODBC Data Source Administrator](https://docs.microsoft.com/en-us/sql/odbc/admin/odbc-data-source-administrator):
+
 ![Windows ODBC Data Source 1](./img/odbc-cache-ds1.jpg "Windows ODBC Data Source 1")
 
 ![Windows ODBC Data Source 2](./img/odbc-cache-ds2.jpg "Windows ODBC Data Source 2")
@@ -25,7 +27,7 @@ __[Private Options Configuration:](https://ugate.github.io/sqler/Manager.html#~P
 > __NOTE:__ `univ.db.cache` does not require any additional private properties since the Cachè ODBC driver only requires the `DSN` in the connection options
 
 __[Connection Options Configuration:](global.html#OdbcConnectionOptions)__
-```jsdocp ./test/fixtures/cache/cache.json
+```jsdocp ./test/fixtures/cache/conf.json
 ```
 
 > __NOTE:__ [`db.connections.driverOptions.connection.DSN`](global.html#OdbcConnectionOptions) interpolates into `db.connections[].service`

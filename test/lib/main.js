@@ -145,6 +145,9 @@ class Tester {
     rslts[++rslti] = await read(priv.mgr, priv.dialect);
     crudly(rslts[rslti], 'read', 'TABLE');
 
+    // TODO : MySQL returns invalid characters for DATETIME(3) or TIMESTAMP(3), so milliseconds are truncated, wait 1 sec so tests will pass
+    if (priv.dialect === 'mysql') await Labrat.wait(1000);
+
     const update = getCrudOp('update', priv.dialect);
     rslts[++rslti] = await update(priv.mgr, priv.dialect);
     crudly(rslts[rslti], 'update');
@@ -175,7 +178,7 @@ module.exports = Tester;
 function getConf(noPool) {
   let conf = priv.conf[priv.dialect];
   if (!conf) {
-    conf = priv.conf[priv.dialect] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.dialect}`, `${priv.dialect}.json`), 'utf8'));
+    conf = priv.conf[priv.dialect] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.dialect}`, 'conf.json'), 'utf8'));
     if (!priv.univ) {
       priv.univ = JSON.parse(Fs.readFileSync(Path.join('test/fixtures', 'priv.json'), 'utf8')).univ;
     }
