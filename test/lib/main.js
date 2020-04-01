@@ -33,7 +33,7 @@ class Tester {
    */
   static async before() {
     priv.ci = 'CI' in process.env;
-    Labrat.header(`Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`);
+    Labrat.header(`${priv.dialect} > Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`);
     
     const conf = getConf();
     priv.cache = null;
@@ -52,10 +52,10 @@ class Tester {
    */
   static async after() {
     if (!priv.created) {
-      Labrat.header('Skipping dropping of test tables');
+      Labrat.header(`${priv.dialect} > Skipping dropping of test tables`);
       return;
     }
-    Labrat.header('Dropping test tables (if any)');
+    Labrat.header(`${priv.dialect} > Dropping test tables (if any)`);
     
     const conf = getConf();
     priv.cache = null;
@@ -72,7 +72,7 @@ class Tester {
         }
         priv.created = false;
       } catch (err) {
-        if (LOGGER.warn) LOGGER.warn(`Failed to delete tables (CI=${priv.ci})`, err);
+        if (LOGGER.warn) LOGGER.warn(`${priv.dialect} > Failed to delete tables (CI=${priv.ci})`, err);
       }
     } else {
       await priv.mgr.db[priv.dialect].setup.delete.tables();
@@ -105,6 +105,7 @@ class Tester {
    * Test CRUD operations for a specified `priv.dialect` and `priv.mgr`
    */
   static async crud() {
+    Labrat.header(`${priv.dialect} > Running CRUD tests`);
     const rslts = new Array(3);
     let rslti = -1, lastUpdated;
 
