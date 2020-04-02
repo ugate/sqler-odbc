@@ -1,12 +1,12 @@
 'use strict';
 
-const OracleDialect = require('../../index');
+const OdbcDialect = require('../../index');
 const { expect } = require('@hapi/code');
 
 /**
 * Test Oracle database {@link Dialect}
 */
-module.exports = class OracleTestDialect extends OracleDialect {
+module.exports = class OdbcTestDialect extends OdbcDialect {
 
   /**
    * @inheritdoc
@@ -17,9 +17,7 @@ module.exports = class OracleTestDialect extends OracleDialect {
     expect(priv, 'priv').to.be.object();
 
     expect(connConf, 'connConf').to.be.object();
-    
-    expect(connConf.host || priv.host, 'priv.host').to.be.string();
-    expect(connConf.host || priv.host, 'priv.host.length').to.not.be.empty();
+
     expect(connConf.username || priv.username, 'priv.username').to.be.string();
     expect(connConf.username || priv.username, 'priv.username.length').to.not.be.empty();
     expect(connConf.password || priv.password, 'priv.password').to.be.string();
@@ -33,12 +31,9 @@ module.exports = class OracleTestDialect extends OracleDialect {
     expect(connConf.dir, 'connConf.dir.length').to.not.be.empty();
     expect(connConf.service, 'connConf.service').to.be.string();
     expect(connConf.service, 'connConf.service.length').to.not.be.empty();
-    expect(connConf.dialect, 'connConf.dialect').to.be.string();
-    expect(connConf.dialect, 'connConf.dialect.length').to.not.be.empty();
+    expect(connConf.dialect, 'connConf.dialect === odbc').to.equal('odbc');
 
     expectDriverOptions(connConf, this);
-    expect(this.driver.connectionClass, 'this.driver.connectionClass').to.be.string();
-    expect(this.driver.connectionClass, 'this.driver.connectionClass.length').to.not.be.length(0);
 
     expect(track, 'track').to.be.object();
     if (errorLogger) expect(errorLogger, 'errorLogger').to.be.function();

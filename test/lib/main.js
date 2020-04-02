@@ -37,7 +37,7 @@ class Tester {
     
     const conf = getConf();
     priv.cache = null;
-    priv.mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    priv.mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
     await priv.mgr.init();
     
     if (priv.mgr.db[priv.dialect].setup) {
@@ -105,7 +105,6 @@ class Tester {
    * Test CRUD operations for a specified `priv.dialect` and `priv.mgr`
    */
   static async crud() {
-    Labrat.header(`${priv.dialect} > Running CRUD tests`);
     const rslts = new Array(3);
     let rslti = -1, lastUpdated;
 
@@ -166,6 +165,92 @@ class Tester {
     if (LOGGER.debug) LOGGER.debug(`CRUD ${priv.dialect} execution results:`, ...rslts);
     return rslts;
   }
+
+  //====================== Configurations ======================
+
+  static async initThrow() {
+    // need to set a conf override to prevent overwritting of privateConf.username
+    const conf = getConf({ pool: null });
+    conf.univ.db[priv.dialect].username = 'invalid';
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
+    return mgr.init();
+  }
+
+  static async noDriverOptionsThrow() {
+    const conf = getConf({ driverOptions: null });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async noDriverOptionsConnThrow() {
+    const conf = getConf({ driverOptions: {} });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async noDriverOptionsPool() {
+    const conf = getConf({
+      driverOptions: (prop, conn) => {
+        conn[prop] = conn[prop] || {};
+        delete conn[prop].pool;
+      }
+    });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async noPool() {
+    const conf = getConf({ pool: null });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
+    return mgr.init();
+  }
+
+  static async invalidDriverOptionsConnObjThrow() {
+    const conf = getConf({
+      driverOptions: (prop, conn) => {
+        conn.bad = {};
+        conn[prop] = conn[prop] || {};
+        conn[prop].connection = conn[prop].connection || {};
+        conn[prop].connection.object = '${bad}';
+      }
+    });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async invalidDriverOptionsConnPrivObjThrow() {
+    const conf = getConf({
+      driverOptions: (prop, conn) => {
+        conn[prop] = conn[prop] || {};
+        conn[prop].connection = conn[prop].connection || {};
+        conn[prop].connection.object = '${bad}';
+      }
+    });
+    conf.univ.db[priv.dialect].bad = {};
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async invalidDriverOptionsConnRefThrow() {
+    const conf = getConf({
+      driverOptions: (prop, conn) => {
+        conn[prop] = conn[prop] || {};
+        conn[prop].connection = conn[prop].connection || {};
+        conn[prop].connection.missing = '${nonExistentProperty}';
+      }
+    });
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
+
+  static async multipleConnections() {
+    const conf = getConf();
+    const conn = JSON.parse(JSON.stringify(conf.db.connections[0]));
+    conn.name += '2';
+    conf.db.connections.push(conn);
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+    return mgr.init();
+  }
 }
 
 // TODO : ESM comment the following line...
@@ -173,10 +258,12 @@ module.exports = Tester;
 
 /**
  * Generates a configuration
- * @param {Boolean} noPool Truthy to exclude connection pooling
+ * @param {Object} [overrides] The connection configuration override properties. Each property will be deleted from the returned
+ * connection configuration when falsy. When the property value is an function, the `function(propertyName, connectionConf)` will
+ * be called (property not set by the callee). Otherwise, the property value will be set on the configuration.
  * @returns {Object} The configuration
  */
-function getConf(noPool) {
+function getConf(overrides) {
   let conf = priv.conf[priv.dialect];
   if (!conf) {
     conf = priv.conf[priv.dialect] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.dialect}`, 'conf.json'), 'utf8'));
@@ -185,16 +272,30 @@ function getConf(noPool) {
     }
     conf.univ = priv.univ;
     conf.mainPath = 'test';
-    conf.db.dialects.odbc = './index.js';//'./test/dialects/test-dialect.js';
+    conf.db.dialects.odbc = './test/dialects/test-dialect.js';
   }
-  if (noPool) conf = JSON.parse(JSON.stringify(conf));
+  if (overrides) {
+    const confCopy = JSON.parse(JSON.stringify(conf));
+    for (let dlct in conf.db.dialects) {
+      confCopy.db.dialects[dlct] = conf.db.dialects[dlct];
+    }
+    conf = confCopy;
+  }
+  let exclude;
   for (let conn of conf.db.connections) {
-    if (noPool) {
-      delete conn.pool;
-    } else {
-      conn.pool.min = Math.floor((process.env.UV_THREADPOOL_SIZE - 1) / 2) || 2;
-      conn.pool.max = process.env.UV_THREADPOOL_SIZE - 1;
-      conn.pool.increment = 1;
+    for (let prop in conn) {
+      if (!conn.hasOwnProperty(prop)) continue;
+      exclude = overrides && overrides.hasOwnProperty(prop);
+      if (exclude) {
+        if (typeof overrides[prop] === 'function') overrides[prop](prop, conn);
+        else if (overrides[prop]) conn[prop] = overrides[prop];
+        else delete conn[prop];
+      } else if (prop === 'pool') {
+        conn.pool.min = Math.floor((process.env.UV_THREADPOOL_SIZE - 1) / 2) || 2;
+        conn.pool.max = process.env.UV_THREADPOOL_SIZE ? process.env.UV_THREADPOOL_SIZE - 1 : conn.pool.min;
+        conn.pool.increment = 1;
+        if (!overrides) return conf; // no need to continue since there are no more options that need to be set manually
+      }
     }
   }
   return conf;

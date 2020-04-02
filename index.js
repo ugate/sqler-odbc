@@ -3,8 +3,8 @@
 /**
  * ODBC specific extension of the {@link Manager~ConnectionOptions} from the [`sqler`](https://ugate.github.io/sqler/) module.
  * @typedef {Manager~ConnectionOptions} OdbcConnectionOptions
- * @property {Object} [driverOptions] The `odbc` module specific options.
- * @property {Object} [driverOptions.connection] An object that will contain properties/values that will be used to construct the ODBC connection string.
+ * @property {Object} driverOptions The `odbc` module specific options.
+ * @property {Object} driverOptions.connection An object that will contain properties/values that will be used to construct the ODBC connection string.
  * For example, `{ UID: 'someUsername', PWD: 'somePassword' }` would generate `UID=someUsername;PWD=somePassword`.
  * When a property value is a string surrounded by `${}`, it will be assumed to be a property that resides on either the {@link Manager~PrivateOptions}
  * passed into the {@link Manager} constructor or a property on the {@link OdbcConnectionOptions} itself (in that order of precedence). For example, 
@@ -54,6 +54,8 @@ module.exports = class OdbcDialect {
    * @param {Boolean} [debug] A flag that indicates the dialect should be run in debug mode (if supported)
    */
   constructor(priv, connConf, track, errorLogger, logger, debug) {
+    if (!connConf.driverOptions) throw new Error('Connection configuration is missing required driverOptions');
+    if (!connConf.driverOptions.connection) throw new Error('Connection configuration is missing required driverOptions.connection');
     const dlt = internal(this);
     dlt.at.track = track;
     dlt.at.odbc = require('odbc');
@@ -61,12 +63,12 @@ module.exports = class OdbcDialect {
     dlt.at.opts = {
       autoCommit: true, // default autoCommit = true to conform to sqler
       id: `sqlerOdbcGen${Math.floor(Math.random() * 10000)}`,
-      connection: connConf.driverOptions && connConf.driverOptions.connection,
-      pool: connConf.driverOptions && connConf.driverOptions.pool ? dlt.at.track.interpolate({}, connConf.driverOptions.pool, dlt.at.odbc) : {}
+      connection: connConf.driverOptions.connection,
+      pool: connConf.driverOptions.pool ? dlt.at.track.interpolate({}, connConf.driverOptions.pool, dlt.at.odbc) : {}
     };
     dlt.at.state = {
       pending: 0,
-      connection: {}
+      connection: { count: 0, inUse: 0 }
     };
 
     dlt.at.errorLogger = errorLogger;
@@ -80,38 +82,40 @@ module.exports = class OdbcDialect {
     dlt.at.opts.pool.loginTimeout = connConf.pool ? connConf.pool.timeout : null;
 
     dlt.at.opts.pool.connectionString = '';
-    if (dlt.at.opts.connection) {
-      let cstr = '', val;
-      for (let connProp in dlt.at.opts.connection) {
-        val = dlt.at.opts.connection[connProp];
-        if (val && typeof val === 'string') {
-          // global shallow interpolation to allow multiple interpolated values
-          // in a single value (e.g. connection.Server = '${protocol}:${service},${port}')
-          // negates the need to use track.interpolate
-          val = val.replace(/\${\s*([A-Z_]+)\s*}/ig, (match, name) => {
-            if (connConf.hasOwnProperty(name)) {
-              if (typeof connConf[name] === 'object') {
-                throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on connection options:\n${
-                  JSON.stringify(connConf, null, ' ')
-                }`);
-              }
-              return connConf[name];
+    let cstr = '', val;
+    for (let connProp in dlt.at.opts.connection) {
+      val = dlt.at.opts.connection[connProp];
+      if (typeof val === 'string') {
+        // global shallow interpolation to allow multiple interpolated values
+        // in a single value (e.g. connection.Server = '${protocol}:${service},${port}')
+        // negates the need to use track.interpolate
+        val = val.replace(/\${\s*([A-Z_]+)\s*}/ig, (match, name) => {
+          if (connConf.hasOwnProperty(name)) {
+            if (typeof connConf[name] === 'object') {
+              throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on connection options:\n${
+                JSON.stringify(connConf, null, ' ')
+              }`);
             }
-            if (priv.hasOwnProperty(name)) {
-              if (typeof priv[name] === 'object') {
-                throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on private options:\n${
-                  JSON.stringify(priv, (key, val) => key === 'password' ? '***' : val, ' ')
-                }`);
-              }
-              return priv[name];
+            return connConf[name];
+          }
+          if (priv.hasOwnProperty(name)) {
+            if (typeof priv[name] === 'object') {
+              throw new Error(`sqler-odbc: Interpolation "${match}" references a non-transposable Object on private options:\n${
+                JSON.stringify(priv, (key, val) => key === 'password' ? '***' : val, ' ')
+              }`);
             }
-            return match;
-          });
-        }
-        cstr += `${cstr ? ';' : ''}${connProp}=${val}`;
+            return priv[name];
+          }
+          throw new Error(`sqler-odbc: Interpolation "${match}" references a non-existent property for both the connection options:\n${
+            JSON.stringify(connConf, null, ' ')
+          } and the private options:\n${
+            JSON.stringify(priv, (key, val) => key === 'password' ? '***' : val, ' ')
+          }`);
+        });
       }
-      dlt.at.opts.pool.connectionString = cstr;
+      cstr += `${cstr ? ';' : ''}${connProp}=${val}`;
     }
+    dlt.at.opts.pool.connectionString = cstr;
   }
 
   /**
@@ -121,27 +125,20 @@ module.exports = class OdbcDialect {
    */
   async init(opts) {
     const dlt = internal(this), numSql = opts.numOfPreparedStmts;
-    let action;
     try {
-      if (dlt.at.pool) {
-        action = 'captured from cache';
-      } else {
-        action = 'created';
-        dlt.at.pool = await dlt.at.odbc.pool(dlt.at.opts.pool);
-      }
+      dlt.at.pool = await dlt.at.odbc.pool(dlt.at.opts.pool);
       if (dlt.at.logger) {
-        dlt.at.logger(`sqler-odbc: Connection pool "${dlt.at.opts.id}" ${action} with (${numSql} SQL files) ` +
+        dlt.at.logger(`sqler-odbc: Connection pool "${dlt.at.opts.id}" created with (${numSql} SQL files) ` +
           `loginTimeout=${dlt.at.opts.pool.loginTimeout} incrementSize=${dlt.at.opts.pool.incrementSize} ` +
           `initialSize=${dlt.at.opts.pool.initialSize} maxSize=${dlt.at.opts.pool.maxSize} shrink=${dlt.at.opts.pool.shrink}`);
       }
       return dlt.at.pool;
     } catch (err) {
-      const msg = `sqler-odbc: connection pool "${dlt.at.opts.id}" could not be ${action}`;
-      if (dlt.at.errorLogger) dlt.at.errorLogger(`${msg} ${JSON.stringify(err, null, ' ')}`);
+      const msg = `sqler-odbc: connection pool "${dlt.at.opts.id}" could not be created`;
+      if (dlt.at.errorLogger) dlt.at.errorLogger(`${msg} (passwords are omitted from error) ${JSON.stringify(err, null, ' ')}`);
       const pconf = Object.assign({}, dlt.at.opts.pool);
-      // mask sensitive data
-      if (pconf.PWD) pconf.PWD = '***';
-      if (pconf.password) pconf.password = '***';
+      delete pconf.PWD;
+      delete pconf.password;
       err.message = `${err.message}\n${msg} for ${JSON.stringify(pconf, null, ' ')}`;
       err.sqlerOdbc = pconf;
       throw err;
