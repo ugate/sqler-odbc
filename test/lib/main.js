@@ -24,6 +24,9 @@ const priv = {
   conf: {}
 };
 
+// ensure unhandled rejections puke with a non-zero exit code
+process.on('unhandledRejection', up => { throw up });
+
 // TODO : ESM uncomment the following line...
 // export
 class Tester {
