@@ -9,8 +9,12 @@ node_js:
 services:
   - mysql
   - postgresql
+env:
+  - MYSQL_ODBC_MAJOR=8 MYSQL_ODBC_MINOR=0 MYSQL_ODBC_PATCH=19 MYSQL_ODBC_UBUNTU_VER=19.10
 before_install:
   - sudo apt-get install unixodbc unixodbc-dev
+  - bash ./test/fixtures/mysql/install.sh
+  - sudo apt-get install odbc-postgresql
 branches:
   only:
     - master
