@@ -1,6 +1,6 @@
 <b class="jsdocp-remove-me">
 
-# ![](https://raw.githubusercontent.com/ugate/sqler/master/jsdocp/static/favicon-32x32.png) `sqler-odbc`
+# ![](https://raw.githubusercontent.com/ugate/sqler-odbc/master/jsdocp/static/favicon-32x32.png) `sqler-odbc`
 
 [![npm version](https://badgen.net/npm/v/sqler-odbc?color=orange&icon=npm)](https://www.npmjs.com/package/sqler-odbc)
 [![Build Status](https://badgen.net/travis/ugate/sqler-odbc?icon=travis)](https://travis-ci.com/ugate/sqler-odbc)
@@ -9,7 +9,7 @@
 
 </b>
 
-[ODBC](https://oracle.github.io/node-odbc) dialect for [`sqler`](https://github.com/ugate/sqler).
+[ODBC](https://www.npmjs.com/package/odbc) dialect for [`sqler`](https://github.com/ugate/sqler).
 
 - [Manual (w/compatibility matrix)](https://ugate.github.io/sqler-odbc/tutorial-1-manual.html)
 - [API Docs](https://ugate.github.io/sqler-odbc/module.exports.html)
