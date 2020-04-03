@@ -17,7 +17,7 @@ exports.lab = lab;
 
 const TEST_TKO = 3000;
 const TEST_LONG_TKO = 7000;
-const plan = `Oracle DB Manager`;
+const plan = `ODBC DB Manager`;
 
 // node test/lib/main.js someTestFunction -NODE_ENV=test
 

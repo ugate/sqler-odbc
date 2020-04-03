@@ -1,1 +1,1 @@
-> See [Testing docs](https://ugate.github.io/sqler-oracle/tutorial-2-testing.html) for setup details for testing `sqler-oracle`
+> Tests assume that database vendor software, ODBC drivers, etc. are installed prior to running any tests.

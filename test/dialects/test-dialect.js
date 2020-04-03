@@ -4,7 +4,7 @@ const OdbcDialect = require('../../index');
 const { expect } = require('@hapi/code');
 
 /**
-* Test Oracle database {@link Dialect}
+* Test ODBC database {@link Dialect}
 */
 module.exports = class OdbcTestDialect extends OdbcDialect {
 
@@ -82,9 +82,9 @@ module.exports = class OdbcTestDialect extends OdbcDialect {
 };
 
 /**
- * Expects the oracle driver options (when present)
+ * Expects the ODBC driver options (when present)
  * @param {Manager~ConnectionOptions} opts The connection options to check
- * @param {OracleTestDialect} dlt The test dialect
+ * @param {OdbcTestDialect} dlt The test dialect
  */
 function expectDriverOptions(opts, dlt) {
   expect(dlt.driver, `${dlt.constructor.name} driver`).to.be.object();
