@@ -9,6 +9,8 @@ node_js:
 services:
   - mysql
   - postgresql
+before_install:
+  - sudo apt-get install unixodbc unixodbc-dev
 branches:
   only:
     - master
