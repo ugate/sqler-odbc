@@ -20,7 +20,7 @@ const priv = {
   mgrLogit: !!LOGGER.info,
   // TODO : oracle "Error: [odbc] Error executing the statement" for create.table.rows.sql (multiple statements)
   // change the dialect to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
-  dialect: process.env.SQLER_ODBC_DIALECT || 'mysql',
+  dialect: process.env.SQLER_ODBC_DIALECT || process.env.NODE_ENV || 'mysql',
   conf: {}
 };
 
@@ -310,7 +310,7 @@ function getConf(overrides) {
   if (!conf) {
     conf = priv.conf[priv.dialect] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.dialect}`, 'conf.json'), 'utf8'));
     if (!priv.univ) {
-      priv.univ = JSON.parse(Fs.readFileSync(Path.join('test/fixtures', 'priv.json'), 'utf8')).univ;
+      priv.univ = JSON.parse(Fs.readFileSync(Path.join('test/fixtures', `priv${priv.ci ? '-ci' : ''}.json`), 'utf8')).univ;
     }
     conf.univ = priv.univ;
     conf.mainPath = 'test';

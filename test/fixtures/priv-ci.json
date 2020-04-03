@@ -1,0 +1,23 @@
+{
+  "univ": {
+    "db": {
+      "mssql": {
+        "username":"sa",
+        "password": ""
+      },
+      "oracle": {
+        "username": "system",
+        "password": ""
+      },
+      "mysql": {
+        "username":"root",
+        "password": ""
+      },
+      "postgresql": {
+        "username":"postgres",
+        "password": ""
+      },
+      "cache": {}
+    }
+  }
+}

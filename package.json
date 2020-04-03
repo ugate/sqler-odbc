@@ -7,9 +7,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "lab -v -P test -c --coverage-exclude lib -t 85 -e prod",
-    "testing": "lab -v -P test -c --coverage-exclude lib -t 85 -e test",
-    "test-debug": "lab -v -P test -c --coverage-exclude lib -t 85 -e dev",
+    "test": "lab -v -P test -c --coverage-exclude lib -t 85 -e mysql && lab -v -P test -c --coverage-exclude lib -t 85 -e postgresql",
     "test-mssql": "env SQLER_ODBC_DIALECT=mssql node test/lib/main.js crud",
     "test-oracle": "env SQLER_ODBC_DIALECT=oracle node test/lib/main.js crud",
     "test-mysql": "env SQLER_ODBC_DIALECT=mysql node test/lib/main.js crud",

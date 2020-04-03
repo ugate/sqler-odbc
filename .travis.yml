@@ -6,6 +6,9 @@ dist: xenial
 language: node_js
 node_js:
   - "lts/*"
+services:
+  - mysql
+  - postgresql
 branches:
   only:
     - master
