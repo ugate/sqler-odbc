@@ -15,6 +15,7 @@ before_install:
   - sudo apt-get install unixodbc unixodbc-dev
   - bash ./test/fixtures/mysql/install.sh
   - sudo apt-get install odbc-postgresql
+  - odbcinst -q -d
 branches:
   only:
     - master
