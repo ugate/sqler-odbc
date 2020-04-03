@@ -60,7 +60,7 @@ class Tester {
     const conf = getConf();
     priv.cache = null;
     if (!priv.mgr) {
-      priv.mgr = new Manager(conf, priv.cache, priv.mgrLogit);
+      priv.mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
       await priv.mgr.init();
     }
     
@@ -78,7 +78,7 @@ class Tester {
       await priv.mgr.db[priv.dialect].setup.delete.tables();
       priv.created = false;
     }
-
+    return priv.mgr.close();
   }
 
   /**
@@ -166,6 +166,33 @@ class Tester {
     return rslts;
   }
 
+  static async invalidSqlThrow() {
+    return priv.mgr.db[priv.dialect].error.update.non.exist({}, ['error']);
+  }
+
+  static async invalidBindThrow() {
+    const date = datify();
+    return priv.mgr.db[priv.dialect].create.table.rows({
+      binds: {
+        id: 500, name: 'SHOULD NEVER GET INSERTED', created: date, updated: date,
+        id2: 500, name2: 'SHOULD NEVER GET INSERTED', /* report2 missing should throw error */ created2: date, updated2: date
+      }
+    });
+  }
+
+  static async isolationLevel() {
+    const date = datify();
+    return priv.mgr.db[priv.dialect].create.table.rows({
+      binds: {
+        id: 10000, name: 'Isolation Level Test', created: date, updated: date,
+        id2: 10000, name2: 'Isolation Level Test', report2: Buffer.from('TEST REPORT'), created2: date, updated2: date
+      },
+      driverOptions: {
+        isolationLevel: '${SQL_TXN_READ_UNCOMMITTED}'
+      }
+    });
+  }
+
   //====================== Configurations ======================
 
   static async initThrow() {
@@ -173,19 +200,22 @@ class Tester {
     const conf = getConf({ pool: null });
     conf.univ.db[priv.dialect].username = 'invalid';
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async noDriverOptionsThrow() {
     const conf = getConf({ driverOptions: null });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async noDriverOptionsConnThrow() {
     const conf = getConf({ driverOptions: {} });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async noDriverOptionsPool() {
@@ -196,13 +226,15 @@ class Tester {
       }
     });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async noPool() {
     const conf = getConf({ pool: null });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async invalidDriverOptionsConnObjThrow() {
@@ -215,7 +247,8 @@ class Tester {
       }
     });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async invalidDriverOptionsConnPrivObjThrow() {
@@ -228,7 +261,8 @@ class Tester {
     });
     conf.univ.db[priv.dialect].bad = {};
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async invalidDriverOptionsConnRefThrow() {
@@ -240,7 +274,8 @@ class Tester {
       }
     });
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
   }
 
   static async multipleConnections() {
@@ -249,7 +284,14 @@ class Tester {
     conn.name += '2';
     conf.db.connections.push(conn);
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
-    return mgr.init();
+    await mgr.init();
+    return mgr.close();
+  }
+
+  static async closeBeforeInit() {
+    const conf = getConf();
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
+    return mgr.close();
   }
 }
 
@@ -320,6 +362,15 @@ function getCrudOp(name, dialect, isSetup) {
  */
 function generateTestAbyssLogger() {
   return function testAbyssLogger() {};
+}
+
+/**
+ * Formats a date to a string suitable for database use
+ * @param {Date} [date=new Date()] The date to format for database use
+ * @returns {String} A database suitible date string
+ */
+function datify(date) {
+  return (date || new Date()).toISOString().replace('T', ' ').replace('Z', '');
 }
 
 // when not ran in a test runner execute static Tester functions (excluding what's passed into Main.run) 

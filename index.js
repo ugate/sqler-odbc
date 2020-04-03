@@ -139,6 +139,7 @@ module.exports = class OdbcDialect {
       const pconf = Object.assign({}, dlt.at.opts.pool);
       delete pconf.PWD;
       delete pconf.password;
+      pconf.connectionString = pconf.connectionString.replace(/(PWD|Password)\s*=\s*[^\s\r\n;]+/gi, '$1=***');
       err.message = `${err.message}\n${msg} for ${JSON.stringify(pconf, null, ' ')}`;
       err.sqlerOdbc = pconf;
       throw err;
@@ -187,13 +188,15 @@ module.exports = class OdbcDialect {
         return '?';
       });
 
+      const dopts = opts.driverOptions ? dlt.at.track.interpolate({}, opts.driverOptions, dlt.at.odbc) : {};
+
       const isQuery = !opts.transactionId && opts.type === 'READ';
       if (isQuery) {
         rslts = await dlt.at.pool.query(esql, ebndp);
       } else {
         conn = await dlt.this.getConnection(opts);
-        if (opts.driverOptions && opts.driverOptions.hasOwnProperty('isolationLevel')) {
-          await conn.setIsolationLevel(opts.driverOptions.isolationLevel);
+        if (dopts.hasOwnProperty('isolationLevel')) {
+          await conn.setIsolationLevel(dopts.isolationLevel);
         }
         let stmt;
         try {
@@ -214,7 +217,7 @@ module.exports = class OdbcDialect {
       if (!isQuery) {
         if (opts.autoCommit) {
           // ODBC has no option to autocommit during SQL execution
-          await operation(dlt, 'commit', true, conn, opts)();
+          await operation(dlt, 'commit', false, conn, opts)();
           await operation(dlt, 'close', true, conn, opts)();
         } else {
           dlt.at.state.pending++;
@@ -231,13 +234,12 @@ module.exports = class OdbcDialect {
           err.closeError = cerr;
         }
       }
-      const msg = ` (BINDS: [${Object.keys(bndp)}], FRAGS: ${frags ? Array.isArray(frags) ? frags.join(', ') : frags : 'N/A'})`;
+      const msg = ` (BINDS: [${Object.keys(bndp)}], FRAGS: ${Array.isArray(frags) ? frags.join(', ') : frags})`;
       if (dlt.at.errorLogger) {
         dlt.at.errorLogger(`Failed to execute the following SQL: ${sql}`, err);
       }
       err.message += msg;
-      err.sqler = err.sqler || {};
-      err.sqler.sqlODBC = esql;
+      err.sqler = { sqlODBC: esql };
       //err.sqler.bindsODBC = errorOpts && errorOpts.includeBindValues ? ebndp : Object.keys(bndp);
       throw err;
     }
@@ -246,12 +248,12 @@ module.exports = class OdbcDialect {
   /**
    * Gets the currently open connection or a new connection when no transaction is in progress
    * @protected
-   * @param {OdbcExecOptions} [opts] The execution options
+   * @param {OdbcExecOptions} opts The execution options
    * @returns {Object} The connection (when present)
    */
   async getConnection(opts) {
     const dlt = internal(this);
-    const txId = opts && opts.transactionId;
+    const txId = opts.transactionId;
     let conn = txId ? dlt.at.connections[txId] : null;
     if (!conn) {
       conn = await dlt.at.pool.connect();
@@ -300,8 +302,8 @@ module.exports = class OdbcDialect {
  * @private
  * @param {Object} dlt The internal ODBC object instance
  * @param {String} name The name of the function that will be called on the connection
- * @param {Boolean} [reset] Truthy to reset the pending connection and transaction count when the operation completes successfully
- * @param {Object} [conn] The connection (ommit to get a connection from the pool)
+ * @param {Boolean} reset Truthy to reset the pending connection and transaction count when the operation completes successfully
+ * @param {Object} conn The connection
  * @param {Manager~ExecOptions} [opts] The {@link Manager~ExecOptions}
  * @returns {Function} A no-arguement `async` function that returns the number or pending transactions
  */
@@ -309,13 +311,11 @@ function operation(dlt, name, reset, conn, opts) {
   return async () => {
     let error;
     try {
-      if (!conn) {
-        conn = await dlt.at.pool.connect();
-      }
-      if (conn && dlt.at.logger) {
+      //if (!conn) conn = await dlt.at.pool.connect(); // get connection from the pool
+      if (dlt.at.logger) {
         dlt.at.logger(`sqler-odbc: Performing ${name} on connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
       }
-      if (conn) await conn[name]();
+      await conn[name]();
       if (reset) {
         if (opts && opts.transactionId) delete dlt.at.connections[opts.transactionId];
         dlt.at.state.pending = 0;
@@ -328,7 +328,7 @@ function operation(dlt, name, reset, conn, opts) {
       }
       throw error;
     } finally {
-      if (conn && name !== 'close') {
+      if (name !== 'close') {
         try {
           await conn.close();
         } catch (cerr) {
