@@ -19,8 +19,8 @@ const priv = {
   rowCount: 2,
   mgrLogit: !!LOGGER.info,
   // TODO : oracle "Error: [odbc] Error executing the statement" for create.table.rows.sql (multiple statements)
-  // change the dialect to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
-  dialect: process.env.SQLER_ODBC_DIALECT || process.env.NODE_ENV || 'mysql',
+  // change the vendor to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
+  vendor: process.env.SQLER_ODBC_VENDOR,
   conf: {}
 };
 
@@ -33,16 +33,16 @@ class Tester {
    */
   static async before() {
     priv.ci = 'CI' in process.env;
-    Labrat.header(`${priv.dialect} > Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`);
+    Labrat.header(`${priv.vendor}: Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`, 'warn');
     
     const conf = getConf();
     priv.cache = null;
     priv.mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
     await priv.mgr.init();
     
-    if (priv.mgr.db[priv.dialect].setup) {
-      const create = getCrudOp('create', priv.dialect, true);
-      await create(priv.mgr, priv.dialect);
+    if (priv.mgr.db[priv.vendor].setup) {
+      const create = getCrudOp('create', priv.vendor, true);
+      await create(priv.mgr, priv.vendor);
     }
     priv.created = true;
   }
@@ -52,10 +52,10 @@ class Tester {
    */
   static async after() {
     if (!priv.created) {
-      Labrat.header(`${priv.dialect} > Skipping dropping of test tables`);
+      Labrat.header(`${priv.vendor}: Skipping dropping of test tables`, 'warn');
       return;
     }
-    Labrat.header(`${priv.dialect} > Dropping test tables (if any)`);
+    Labrat.header(`${priv.vendor}: Dropping test tables (if any)`, 'warn');
     
     const conf = getConf();
     priv.cache = null;
@@ -66,16 +66,16 @@ class Tester {
     
     if (priv.ci) { // drop isn't really need in CI env
       try {
-        if (priv.mgr.db[priv.dialect].setup) {
-          const drop = getCrudOp('delete', priv.dialect, true);
-          await drop(priv.mgr, priv.dialect);
+        if (priv.mgr.db[priv.vendor].setup) {
+          const drop = getCrudOp('delete', priv.vendor, true);
+          await drop(priv.mgr, priv.vendor);
         }
         priv.created = false;
       } catch (err) {
-        if (LOGGER.warn) LOGGER.warn(`${priv.dialect} > Failed to delete tables (CI=${priv.ci})`, err);
+        if (LOGGER.warn) LOGGER.warn(`${priv.vendor}: Failed to delete tables (CI=${priv.ci})`, err);
       }
     } else {
-      await priv.mgr.db[priv.dialect].setup.delete.tables();
+      await priv.mgr.db[priv.vendor].setup.delete.tables();
       priv.created = false;
     }
     return priv.mgr.close();
@@ -102,9 +102,10 @@ class Tester {
   //======================== Executions ========================
 
   /**
-   * Test CRUD operations for a specified `priv.dialect` and `priv.mgr`
+   * Test CRUD operations for a specified `priv.vendor` and `priv.mgr`
    */
   static async crud() {
+    Labrat.header(`${priv.vendor}: Running CRUD tests`, 'warn');
     const rslts = new Array(3);
     let rslti = -1, lastUpdated;
 
@@ -137,42 +138,43 @@ class Tester {
       lastUpdated = updated;
     };
 
-    const create = getCrudOp('create', priv.dialect);
-    rslts[++rslti] = await create(priv.mgr, priv.dialect);
+    const create = getCrudOp('create', priv.vendor);
+    rslts[++rslti] = await create(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'create');
 
-    const read = getCrudOp('read', priv.dialect);
-    rslts[++rslti] = await read(priv.mgr, priv.dialect);
+    const read = getCrudOp('read', priv.vendor);
+    rslts[++rslti] = await read(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'read', 'TABLE');
 
     // TODO : MySQL returns invalid characters for DATETIME(3) or TIMESTAMP(3), so milliseconds are truncated, wait 1 sec so tests will pass
-    if (priv.dialect === 'mysql') await Labrat.wait(1000);
+    if (priv.vendor === 'mysql') await Labrat.wait(1000);
 
-    const update = getCrudOp('update', priv.dialect);
-    rslts[++rslti] = await update(priv.mgr, priv.dialect);
+    const update = getCrudOp('update', priv.vendor);
+    rslts[++rslti] = await update(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'update');
 
-    rslts[++rslti] = await read(priv.mgr, priv.dialect);
+    rslts[++rslti] = await read(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'update read', 'UPDATE');
 
-    const del = getCrudOp('delete', priv.dialect);
-    rslts[++rslti] = await del(priv.mgr, priv.dialect);
+    const del = getCrudOp('delete', priv.vendor);
+    rslts[++rslti] = await del(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'delete');
 
-    rslts[++rslti] = await read(priv.mgr, priv.dialect);
+    rslts[++rslti] = await read(priv.mgr, priv.vendor);
     crudly(rslts[rslti], 'delete read', null, 0);
 
-    if (LOGGER.debug) LOGGER.debug(`CRUD ${priv.dialect} execution results:`, ...rslts);
+    if (LOGGER.debug) LOGGER.debug(`CRUD ${priv.vendor} execution results:`, ...rslts);
+    Labrat.header(`${priv.vendor}: Completed CRUD tests`, 'warn');
     return rslts;
   }
 
   static async invalidSqlThrow() {
-    return priv.mgr.db[priv.dialect].error.update.non.exist({}, ['error']);
+    return priv.mgr.db[priv.vendor].error.update.non.exist({}, ['error']);
   }
 
   static async invalidBindThrow() {
     const date = datify();
-    return priv.mgr.db[priv.dialect].create.table.rows({
+    return priv.mgr.db[priv.vendor].create.table.rows({
       binds: {
         id: 500, name: 'SHOULD NEVER GET INSERTED', created: date, updated: date,
         id2: 500, name2: 'SHOULD NEVER GET INSERTED', /* report2 missing should throw error */ created2: date, updated2: date
@@ -182,7 +184,7 @@ class Tester {
 
   static async isolationLevel() {
     const date = datify();
-    return priv.mgr.db[priv.dialect].create.table.rows({
+    return priv.mgr.db[priv.vendor].create.table.rows({
       binds: {
         id: 10000, name: 'Isolation Level Test', created: date, updated: date,
         id2: 10000, name2: 'Isolation Level Test', report2: Buffer.from('TEST REPORT'), created2: date, updated2: date
@@ -198,7 +200,7 @@ class Tester {
   static async initThrow() {
     // need to set a conf override to prevent overwritting of privateConf.username
     const conf = getConf({ pool: null });
-    conf.univ.db[priv.dialect].username = 'invalid';
+    conf.univ.db[priv.vendor].username = 'invalid';
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
     await mgr.init();
     return mgr.close();
@@ -259,7 +261,7 @@ class Tester {
         conn[prop].connection.object = '${bad}';
       }
     });
-    conf.univ.db[priv.dialect].bad = {};
+    conf.univ.db[priv.vendor].bad = {};
     const mgr = new Manager(conf, priv.cache, priv.mgrLogit);
     await mgr.init();
     return mgr.close();
@@ -306,9 +308,9 @@ module.exports = Tester;
  * @returns {Object} The configuration
  */
 function getConf(overrides) {
-  let conf = priv.conf[priv.dialect];
+  let conf = priv.conf[priv.vendor];
   if (!conf) {
-    conf = priv.conf[priv.dialect] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.dialect}`, 'conf.json'), 'utf8'));
+    conf = priv.conf[priv.vendor] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.vendor}`, 'conf.json'), 'utf8'));
     if (!priv.univ) {
       priv.univ = JSON.parse(Fs.readFileSync(Path.join('test/fixtures', `priv${priv.ci ? '-ci' : ''}.json`), 'utf8')).univ;
     }
@@ -346,12 +348,12 @@ function getConf(overrides) {
 /**
  * Gets the `async function` that will execute a CRUD operation
  * @param {String} name The name of the CRUD operation (e.g. `create`, `read`, etc.)
- * @param {String} dialect The dialect to use (e.g. `oracle`, `mssql`, etc.)
+ * @param {String} vendor The vendor to use (e.g. `oracle`, `mssql`, etc.)
  * @param {Boolean} [isSetup] Truty when the CRUD operation is for a setup operation (e.g. creating/dropping tables)
  * @returns {Function} The `async function(manager)` that will return the CRUD ODBC results
  */
-function getCrudOp(name, dialect, isSetup) {
-  const base = Path.join(process.cwd(), `test/lib/${dialect}${isSetup ? '/setup' : ''}`);
+function getCrudOp(name, vendor, isSetup) {
+  const base = Path.join(process.cwd(), `test/lib/${vendor}${isSetup ? '/setup' : ''}`);
   const pth = Path.join(base, `${name}.${isSetup ? 'tables' : 'table.rows'}.js`);
   return require(pth);
 }
