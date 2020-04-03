@@ -17,7 +17,7 @@ exports.lab = lab;
 
 const TEST_TKO = 3000;
 const TEST_LONG_TKO = 7000;
-const plan = `ODBC DB Manager`;
+const plan = `ODBC DB Manager (${process.env.SQLER_ODBC_VENDOR})`;
 
 // node test/lib/main.js someTestFunction -NODE_ENV=test
 
