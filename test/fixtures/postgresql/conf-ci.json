@@ -1,0 +1,27 @@
+{
+  "db": {
+    "dialects": {
+      "odbc": "sqler-odbc"
+    },
+    "connections": [
+      {
+        "id": "postgresql",
+        "name": "postgresql",
+        "dir": "db/postgresql",
+        "service": "PostgreSQL",
+        "dialect": "odbc",
+        "pool": {},
+        "driverOptions": {
+          "connection": {
+            "DSN": "${service}",
+            "UID": "${username}",
+            "UseMultipleStatements": 1
+          },
+          "pool": {
+            "shrink": true
+          }
+        }
+      }
+    ]
+  }
+}

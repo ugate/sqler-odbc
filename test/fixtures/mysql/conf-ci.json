@@ -1,0 +1,27 @@
+{
+  "db": {
+    "dialects": {
+      "odbc": "sqler-odbc"
+    },
+    "connections": [
+      {
+        "id": "mysql",
+        "name": "mysql",
+        "dir": "db/mysql",
+        "service": "MySQL",
+        "dialect": "odbc",
+        "pool": {},
+        "driverOptions": {
+          "connection": {
+            "DSN": "${service}",
+            "UID": "${username}",
+            "MULTI_STATEMENTS": 1
+          },
+          "pool": {
+            "shrink": true
+          }
+        }
+      }
+    ]
+  }
+}

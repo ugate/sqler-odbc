@@ -313,7 +313,7 @@ module.exports = Tester;
 function getConf(overrides) {
   let conf = priv.conf[priv.vendor];
   if (!conf) {
-    conf = priv.conf[priv.vendor] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.vendor}`, 'conf.json'), 'utf8'));
+    conf = priv.conf[priv.vendor] = JSON.parse(Fs.readFileSync(Path.join(`test/fixtures/${priv.vendor}`, `conf${priv.ci ? '-ci' : ''}.json`), 'utf8'));
     if (!priv.univ) {
       priv.univ = JSON.parse(Fs.readFileSync(Path.join('test/fixtures', `priv${priv.ci ? '-ci' : ''}.json`), 'utf8')).univ;
     }
@@ -321,18 +321,10 @@ function getConf(overrides) {
     conf.mainPath = 'test';
     conf.db.dialects.odbc = './test/dialects/test-dialect.js';
   }
-  if (overrides || priv.ci) {
+  if (overrides) {
     const confCopy = JSON.parse(JSON.stringify(conf));
     for (let dlct in conf.db.dialects) {
       confCopy.db.dialects[dlct] = conf.db.dialects[dlct];
-    }
-    if (priv.ci) {
-      for (let conn of conf.db.connections) {
-        if (conn.driverOptions && conn.driverOptions.connection) {
-          delete conn.driverOptions.connection.PWD;
-          delete conn.driverOptions.connection.password;
-        }
-      }
     }
     conf = confCopy;
   }

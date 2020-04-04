@@ -1,0 +1,25 @@
+{
+  "db": {
+    "dialects": {
+      "odbc": "sqler-odbc"
+    },
+    "connections": [
+      {
+        "id": "cache",
+        "name": "cache",
+        "dir": "db/cache",
+        "service": "Lab",
+        "dialect": "odbc",
+        "pool": {},
+        "driverOptions": {
+          "connection": {
+            "DSN": "${service}"
+          },
+          "pool": {
+            "shrink": true
+          }
+        }
+      }
+    ]
+  }
+}
