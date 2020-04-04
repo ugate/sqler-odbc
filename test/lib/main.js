@@ -321,10 +321,18 @@ function getConf(overrides) {
     conf.mainPath = 'test';
     conf.db.dialects.odbc = './test/dialects/test-dialect.js';
   }
-  if (overrides) {
+  if (overrides || priv.ci) {
     const confCopy = JSON.parse(JSON.stringify(conf));
     for (let dlct in conf.db.dialects) {
       confCopy.db.dialects[dlct] = conf.db.dialects[dlct];
+    }
+    if (priv.ci) {
+      for (let conn of conf.db.connections) {
+        if (conn.driverOptions && conn.driverOptions.connection) {
+          delete conn.driverOptions.connection.PWD;
+          delete conn.driverOptions.connection.password;
+        }
+      }
     }
     conf = confCopy;
   }
