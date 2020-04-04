@@ -20,7 +20,6 @@ module.exports = class OdbcTestDialect extends OdbcDialect {
 
     expect(connConf.username || priv.username, 'priv.username').to.be.string();
     expect(connConf.username || priv.username, 'priv.username.length').to.not.be.empty();
-    expect(connConf.password || priv.password, 'priv.password').to.be.string();
 
     expect(connConf.id, 'connConf.id').to.be.string();
     expect(connConf.id, 'connConf.id.length').to.not.be.empty();
