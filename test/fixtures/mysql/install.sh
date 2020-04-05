@@ -15,7 +15,11 @@ sudo dpkg -i $MYSQL_NAME
 sudo apt-get update -q
 sudo apt-get install -q -y --allow-unauthenticated -o Dpkg::Options::=--force-confnew mysql-server
 sudo systemctl restart mysql
+# mysql < 8.0
 sudo mysql_upgrade
+# msql >= 8.0
+mysqladmin -u root -p shutdown
+mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
 mysql --version
 
 echo "Installed MySQL $MYSQL_VER"
