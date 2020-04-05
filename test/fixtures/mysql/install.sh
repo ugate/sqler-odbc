@@ -1,8 +1,5 @@
 #!/bin/bash -e
 
-export ODBCSYSINI=/etc
-export ODBCINI=/etc/odbc.ini
-
 # ------------------- MySQL -------------------
 
 MYSQL_MAJOR="8"
@@ -48,8 +45,19 @@ wget -O mysql-odbc.tar.gz -nv https://dev.mysql.com/get/Downloads/Connector-ODBC
 tar -xvf mysql-odbc.tar.gz
 # copy the driver libs
 sudo cp $MYSQL_ODBC_NAME/lib/libmyodbc$MYSQL_ODBC_MAJOR* /usr/lib/x86_64-linux-gnu/odbc/
+
+MYSQL_ODBC_DRIVER="/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so"
+if [[ -f $MYSQL_ODBC_DRIVER ]]
+then
+    echo "Found: $MYSQL_ODBC_DRIVER"
+fi
+
 # install the driver
-sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so;"
+sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver" -t "DRIVER=$MYSQL_ODBC_DRIVER;"
+
+echo "ODBCINST = $ODBCINST"
+echo "ODBCINI = $ODBCINI"
+
 # install the data source
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "MySQL" -t "DRIVER=MySQL;SERVER=127.0.0.1;DATABASE=mysql;UID=root;PWD="
 
