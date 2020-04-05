@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+export ODBCSYSINI=/etc
+export ODBCINI=/etc/odbc.ini
+
 # ------------------- MySQL -------------------
 
 MYSQL_MAJOR="8"
