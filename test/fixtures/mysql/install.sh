@@ -18,8 +18,10 @@ sudo systemctl restart mysql
 # mysql < 8.0
 sudo mysql_upgrade
 # msql >= 8.0
-mysqladmin -u root -p shutdown
+#mysqladmin -u root -p shutdown
+sudo systemctl stop mysql
 mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
+sudo systemctl start mysql
 mysql --version
 
 echo "Installed MySQL $MYSQL_VER"
