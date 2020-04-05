@@ -2,6 +2,11 @@
 
 # ------------------- MySQL -------------------
 
+if [[ -n "$ODBCINST" ]]; then
+  echo "Setting ODBCINST=/etc"
+  export ODBCINST=/etc
+fi
+
 MYSQL_MAJOR="8"
 MYSQL_MINOR="14"
 MYSQL_PATCH="1"
