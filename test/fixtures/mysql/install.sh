@@ -47,16 +47,11 @@ tar -xvf mysql-odbc.tar.gz
 sudo cp $MYSQL_ODBC_NAME/lib/libmyodbc$MYSQL_ODBC_MAJOR* /usr/lib/x86_64-linux-gnu/odbc/
 
 MYSQL_ODBC_DRIVER="/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so"
-if [[ -f $MYSQL_ODBC_DRIVER ]]
-then
-    echo "Found: $MYSQL_ODBC_DRIVER"
-fi
+MYSQL_ODBC_DRIVER_FOUND=`[[ (-f "$MYSQL_ODBC_DRIVER") ]] && echo "Found: $MYSQL_ODBC_DRIVER" || echo "Cannot find: $MYSQL_ODBC_DRIVER"`
+echo $MYSQL_ODBC_DRIVER_FOUND
 
 # install the driver
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver" -t "DRIVER=$MYSQL_ODBC_DRIVER;"
-
-echo "ODBCINST = $ODBCINST"
-echo "ODBCINI = $ODBCINI"
 
 # install the data source
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "MySQL" -t "DRIVER=MySQL;SERVER=127.0.0.1;DATABASE=mysql;UID=root;PWD="
