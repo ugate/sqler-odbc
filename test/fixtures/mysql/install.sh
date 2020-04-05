@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+# ------------------- MySQL -------------------
+
 export MYSQL_MAJOR="8"
 export MYSQL_MINOR="14"
 export MYSQL_PATCH="1"
@@ -18,6 +20,11 @@ mysql --version
 
 echo "Installed MySQL $MYSQL_VER"
 
+# ------------------- MySQL ODBC Drivers -------------------
+
+# Ubuntu version needs to match the distibution being used
+export MYSQL_UBUNTU_VER="19.10"
+
 export MYSQL_ODBC_MAJOR="8"
 export MYSQL_ODBC_MINOR="0"
 export MYSQL_ODBC_PATCH="19"
@@ -32,7 +39,7 @@ tar -xvf mysql-odbc.tar.gz
 # copy the driver libs
 sudo cp $MYSQL_ODBC_NAME/lib/libmyodbc$MYSQL_ODBC_MAJOR* /usr/lib/x86_64-linux-gnu/odbc/
 # install the driver
-sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -d -a -n "MySQL" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so;"
+sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver" -t "DRIVER=/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so;"
 # install the data source
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "MySQL" -t "DRIVER=MySQL;SERVER=127.0.0.1;DATABASE=mysql;UID=root;PWD="
 
