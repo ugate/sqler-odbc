@@ -1,5 +1,23 @@
 #!/bin/bash -e
 
+export MYSQL_MAJOR="8"
+export MYSQL_MINOR="14"
+export MYSQL_PATCH="1"
+export MYSQL_VER="$MYSQL_MAJOR.$MYSQL_MINOR-$MYSQL_PATCH"
+export MYSQL_NAME="mysql-apt-config_0.${MYSQL_VER}_all.deb"
+
+echo "Installing MySQL $MYSQL_VER"
+
+wget https://repo.mysql.com/$MYSQL_NAME
+sudo dpkg -i $MYSQL_NAME
+sudo apt-get update -q
+sudo apt-get install -q -y --allow-unauthenticated -o Dpkg::Options::=--force-confnew mysql-server
+sudo systemctl restart mysql
+sudo mysql_upgrade
+mysql --version
+
+echo "Installed MySQL $MYSQL_VER"
+
 export MYSQL_ODBC_MAJOR="8"
 export MYSQL_ODBC_MINOR="0"
 export MYSQL_ODBC_PATCH="19"
