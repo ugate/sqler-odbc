@@ -20,7 +20,7 @@ sudo mysql_upgrade
 # msql >= 8.0
 #mysqladmin -u root -p shutdown
 sudo systemctl stop mysql
-mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
+sudo mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
 sudo systemctl start mysql
 mysql --version
 
@@ -35,7 +35,7 @@ export MYSQL_ODBC_MAJOR="8"
 export MYSQL_ODBC_MINOR="0"
 export MYSQL_ODBC_PATCH="19"
 export MYSQL_ODBC_VER="$MYSQL_ODBC_MAJOR.$MYSQL_ODBC_MINOR.$MYSQL_ODBC_PATCH"
-export MYSQL_ODBC_NAME="mysql-connector-odbc-$MYSQL_ODBC_VER-linux-ubuntu$MYSQL_ODBC_UBUNTU_VER-x86-64bit"
+export MYSQL_ODBC_NAME="mysql-connector-odbc-$MYSQL_ODBC_VER-linux-ubuntu$MYSQL_UBUNTU_VER-x86-64bit"
 
 echo "Installing MySQL ODBC driver $MYSQL_ODBC_VER"
 
