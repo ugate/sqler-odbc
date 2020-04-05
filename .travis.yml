@@ -11,8 +11,6 @@ services:
   - postgresql
 before_install:
   - sudo apt-get install unixodbc unixodbc-dev
-  - echo $ODBCINST
-  - sudo touch /etc/odbcinst.ini
   - bash ./test/fixtures/mysql/install.sh
   - sudo apt-get install odbc-postgresql
   - odbcinst -j

@@ -56,9 +56,10 @@ MYSQL_ODBC_DRIVER_FOUND=`[[ (-f "$MYSQL_ODBC_DRIVER") ]] && echo "Found: $MYSQL_
 echo $MYSQL_ODBC_DRIVER_FOUND
 
 # install the driver
-sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver" -t "DRIVER=$MYSQL_ODBC_DRIVER;"
+MYSQL_ODBC_DRIVER_NAME="MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver"
+sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "${MYSQL_ODBC_DRIVER_NAME}" -t "DRIVER=$MYSQL_ODBC_DRIVER;"
 
 # install the data source
-sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "MySQL" -t "DRIVER=MySQL;SERVER=127.0.0.1;DATABASE=mysql;UID=root;PWD="
+sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "MySQL" -t "DRIVER=${MYSQL_ODBC_DRIVER_NAME};SERVER=127.0.0.1;DATABASE=mysql;UID=root;PWD="
 
 echo "Installed MySQL ODBC driver $MYSQL_ODBC_VER"
