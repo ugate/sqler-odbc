@@ -3,8 +3,8 @@
 # ------------------- MySQL -------------------
 
 if [[ -z "${ODBCINST}" ]]; then
-  echo "Setting ODBCINST=/etc"
-  export ODBCINST=/etc
+  echo "Setting ODBCINST=/etc/odbcinst.ini"
+  export ODBCINST=/etc/odbcinst.ini
 fi
 
 MYSQL_MAJOR="8"
