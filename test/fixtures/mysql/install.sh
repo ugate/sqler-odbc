@@ -2,7 +2,7 @@
 
 # ------------------- MySQL -------------------
 
-if [[ -n "$ODBCINST" ]]; then
+if [[ -z "${ODBCINST}" ]]; then
   echo "Setting ODBCINST=/etc"
   export ODBCINST=/etc
 fi
