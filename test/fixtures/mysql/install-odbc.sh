@@ -38,6 +38,9 @@ echo $MYSQL_ODBC_DRIVER_FOUND
 MYSQL_ODBC_DRIVER_NAME="MySQL ODBC ${MYSQL_ODBC_MAJOR} Driver"
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -a -d -n "${MYSQL_ODBC_DRIVER_NAME}" -t "DRIVER=$MYSQL_ODBC_DRIVER;"
 
+printf "Installed MySQL ODBC driver:\n`odbcinst -q -d -n "${MYSQL_ODBC_DRIVER_NAME}"`\n"
+printf "Installing MySQL ODBC Data Source for driver [${MYSQL_ODBC_DRIVER_NAME}]\n"
+
 # install the data source
 P_SVR=`[[ -n "$MYSQL_ODBC_SERVER" ]] && echo $MYSQL_ODBC_SERVER || echo "127.0.0.1"`
 P_DBN=`[[ -n "$MYSQL_ODBC_DATABASE" ]] && echo $MYSQL_ODBC_DATABASE || echo "mysql"`
@@ -47,4 +50,4 @@ P_DSN="DRIVER=${MYSQL_ODBC_DRIVER_NAME};SERVER=${P_SVR};DATABASE=${P_DBN};UID=${
 
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "${MYSQL_ODBC_DATASOURCE}" -t "${P_DSN}"
 
-echo "Installed MySQL ODBC driver [${MYSQL_ODBC_DRIVER_NAME}] (version ${MYSQL_ODBC_VER}). Data Source ${MYSQL_ODBC_DATASOURCE} is now available for use"
+printf "Installed MySQL ODBC Data Source ${MYSQL_ODBC_DATASOURCE} for driver [${MYSQL_ODBC_DRIVER_NAME}]:\n`odbcinst -q -s -n "${MYSQL_ODBC_DATASOURCE}"`\n"
