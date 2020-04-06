@@ -57,6 +57,4 @@ printf "UseMultipleStatements=1\n" >> postgresql-ds.txt
 cat postgresql-ds.txt | sudo tee -a /etc/odbc.ini
 rm -f postgresql-ds.txt
 
-printf 
-
 echo "Installed PostgreSQL ODBC driver [${PGSQL_DRIVER}]. Data Source ${POSTGRESQL_ODBC_DATASOURCE} is now available for use"
