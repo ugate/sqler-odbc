@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
 # ------------------- PostgreSQL ODBC Drivers -------------------
 
@@ -52,8 +53,10 @@ printf "PWD=${P_PWD}\n" >> postgresql-ds.txt
 printf "UseMultipleStatements=1\n" >> postgresql-ds.txt
 
 # install data source
-#sudo odbcinst -i -s -f postgresql-ds.txt
-sudo cat postgresql-ds.txt >> /etc/odbc.ini
+#sudo odbcinst -i -s -l -f postgresql-ds.txt
+cat postgresql-ds.txt | sudo tee -a /etc/odbc.ini
 rm -f postgresql-ds.txt
+
+printf 
 
 echo "Installed PostgreSQL ODBC driver [${PGSQL_DRIVER}]. Data Source ${POSTGRESQL_ODBC_DATASOURCE} is now available for use"
