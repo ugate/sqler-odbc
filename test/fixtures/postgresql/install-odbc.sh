@@ -38,7 +38,7 @@ P_UID=`[[ -n "$POSTGRESQL_ODBC_UID" ]] && echo $POSTGRESQL_ODBC_UID || echo "pos
 P_PWD=`[[ -n "$POSTGRESQL_ODBC_PWD" ]] && echo $POSTGRESQL_ODBC_PWD || echo ""`
 
 printf "\n[${POSTGRESQL_ODBC_DATASOURCE}]\n" > postgresql-ds.txt
-printf "Driver={${PGSQL_DRIVER}}\n" >> postgresql-ds.txt
+printf "Driver=${PGSQL_DRIVER}\n" >> postgresql-ds.txt
 printf "Description=PostgreSQL Connector/ODBC\n" >> postgresql-ds.txt
 if [[ -n "$P_SVR" ]]; then
   printf "Server=${P_SVR}\n" >> postgresql-ds.txt
