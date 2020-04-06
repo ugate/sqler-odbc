@@ -3,7 +3,7 @@
 # ------------------- PostgreSQL -------------------
 
 if [[ -z "${POSTGRESQL_MAJOR}" ]]; then
-  echo "Environmental variable POSTGRESQL_MAJOR is required when installing PostgreSQL"
+  echo "[ERROR]: Environmental variable POSTGRESQL_MAJOR is required when installing PostgreSQL"
   exit 1
 fi
 

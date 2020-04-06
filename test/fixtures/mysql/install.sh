@@ -3,7 +3,7 @@
 # ------------------- MySQL -------------------
 
 if [[ -z "${MYSQL_MAJOR}" || -z "${MYSQL_MINOR}" || -z "${MYSQL_PATCH}" ]]; then
-  echo "Environmental variables MYSQL_MAJOR, MYSQL_MINOR and MYSQL_PATCH are required when installing MySQL"
+  echo "[ERROR]: Environmental variables MYSQL_MAJOR, MYSQL_MINOR and MYSQL_PATCH are required when installing MySQL"
   exit 1
 fi
 
