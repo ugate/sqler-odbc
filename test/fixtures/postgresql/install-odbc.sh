@@ -20,7 +20,7 @@ sudo apt-get install odbc-postgresql
 # validate/capture driver name
 PGSQL_DRIVER=`odbcinst -q -d`
 printf "Looking for PostgreSQL driver in: \n${PGSQL_DRIVER}\n"
-PGSQL_DRIVER=`echo $PGSQL_DRIVER | sed -nre 's/\[(PostgreSQL([[:space:]]Unicode)?)\]/\1/pi'`
+PGSQL_DRIVER=`odbcinst -q -d | sed -nre 's/\[(PostgreSQL([[:space:]]Unicode)?)\]/\1/pi'`
 
 if [[ -z "${PGSQL_DRIVER}" ]]; then
   echo "[ERROR]: Unable to find PostgreSQL driver name"
