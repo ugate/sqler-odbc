@@ -6,13 +6,17 @@ dist: bionic
 language: node_js
 node_js:
   - "lts/*"
-services:
-  - mysql
-  - postgresql
+#services:
+#  - mysql
+#  - postgresql
+env:
+  - MYSQL_MAJOR=8 MYSQL_MINOR=14 MYSQL_PATCH=1 MYSQL_ODBC_MAJOR=8 MYSQL_ODBC_MINOR=0 MYSQL_ODBC_PATCH=19 POSTGRESQL_MAJOR=12
 before_install:
   - sudo apt-get install unixodbc unixodbc-dev
   - bash ./test/fixtures/mysql/install.sh
-  - sudo apt-get install odbc-postgresql
+  - bash ./test/fixtures/mysql/install-odbc.sh
+  - bash ./test/fixtures/postgresql/install.sh
+  - bash ./test/fixtures/postgresql/install-odbc.sh
   - odbcinst -j
   - odbcinst -q -d
   - odbcinst -q -s

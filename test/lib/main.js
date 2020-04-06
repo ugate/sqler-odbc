@@ -20,7 +20,7 @@ const priv = {
   mgrLogit: !!LOGGER.info,
   // TODO : oracle "Error: [odbc] Error executing the statement" for create.table.rows.sql (multiple statements)
   // change the vendor to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
-  vendor: process.env.SQLER_ODBC_VENDOR,
+  vendor: process.env.SQLER_ODBC_VENDOR || 'mysql',
   conf: {}
 };
 
@@ -36,7 +36,7 @@ class Tester {
    */
   static async before() {
     priv.ci = 'CI' in process.env;
-    Labrat.header(`${priv.vendor}: Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`, 'warn');
+    Labrat.header(`${priv.vendor}: Creating test tables (if any)${priv.ci ? ` CI=${priv.ci}` : ''}`);
     
     const conf = getConf();
     priv.cache = null;
@@ -55,10 +55,10 @@ class Tester {
    */
   static async after() {
     if (!priv.created) {
-      Labrat.header(`${priv.vendor}: Skipping dropping of test tables`, 'warn');
+      Labrat.header(`${priv.vendor}: Skipping dropping of test tables`);
       return;
     }
-    Labrat.header(`${priv.vendor}: Dropping test tables (if any)`, 'warn');
+    Labrat.header(`${priv.vendor}: Dropping test tables (if any)`);
     
     const conf = getConf();
     priv.cache = null;
@@ -108,7 +108,7 @@ class Tester {
    * Test CRUD operations for a specified `priv.vendor` and `priv.mgr`
    */
   static async crud() {
-    Labrat.header(`${priv.vendor}: Running CRUD tests`, 'warn');
+    Labrat.header(`${priv.vendor}: Running CRUD tests`, 'info');
     const rslts = new Array(3);
     let rslti = -1, lastUpdated;
 
@@ -167,7 +167,7 @@ class Tester {
     crudly(rslts[rslti], 'delete read', null, 0);
 
     if (LOGGER.debug) LOGGER.debug(`CRUD ${priv.vendor} execution results:`, ...rslts);
-    Labrat.header(`${priv.vendor}: Completed CRUD tests`, 'warn');
+    Labrat.header(`${priv.vendor}: Completed CRUD tests`, 'info');
     return rslts;
   }
 
