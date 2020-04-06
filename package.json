@@ -7,7 +7,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "env SQLER_ODBC_VENDOR=mysql lab -v -c --coverage-exclude lib -t 85 -e prod",
+    "test": "lab -v -c --coverage-exclude lib -t 85 -e prod",
     "test-mssql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mssql node test/lib/main.js crud",
     "test-oracle": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=oracle node test/lib/main.js crud",
     "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",

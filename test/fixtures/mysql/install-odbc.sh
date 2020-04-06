@@ -46,7 +46,7 @@ P_SVR=`[[ -n "$MYSQL_ODBC_SERVER" ]] && echo $MYSQL_ODBC_SERVER || echo "127.0.0
 P_DBN=`[[ -n "$MYSQL_ODBC_DATABASE" ]] && echo $MYSQL_ODBC_DATABASE || echo "mysql"`
 P_UID=`[[ -n "$MYSQL_ODBC_UID" ]] && echo $MYSQL_ODBC_UID || echo "root"`
 P_PWD=`[[ -n "$MYSQL_ODBC_PWD" ]] && echo $MYSQL_ODBC_PWD || echo ""`
-P_DSN="DRIVER=${MYSQL_ODBC_DRIVER_NAME};SERVER=${P_SVR};DATABASE=${P_DBN};UID=${P_UID};PWD=${P_PWD}"
+P_DSN="DRIVER={${MYSQL_ODBC_DRIVER_NAME}};SERVER=${P_SVR};DATABASE=${P_DBN};UID=${P_UID};PWD=${P_PWD}"
 
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "${MYSQL_ODBC_DATASOURCE}" -t "${P_DSN}"
 
