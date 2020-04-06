@@ -35,7 +35,7 @@ P_DBN=`[[ -n "$POSTGRESQL_ODBC_DATABASE" ]] && echo $POSTGRESQL_ODBC_DATABASE ||
 P_UID=`[[ -n "$POSTGRESQL_ODBC_UID" ]] && echo $POSTGRESQL_ODBC_UID || echo "postgres"`
 P_PWD=`[[ -n "$POSTGRESQL_ODBC_PWD" ]] && echo $POSTGRESQL_ODBC_PWD || echo ""`
 
-printf "[${POSTGRESQL_ODBC_DATASOURCE}]\n" > postgresql-ds.txt
+printf "\n[${POSTGRESQL_ODBC_DATASOURCE}]\n" > postgresql-ds.txt
 printf "Driver=${PGSQL_DRIVER}\n" >> postgresql-ds.txt
 printf "Description=PostgreSQL Connector/ODBC\n" >> postgresql-ds.txt
 if [[ -n "$P_SVR" ]]; then
@@ -52,7 +52,8 @@ printf "PWD=${P_PWD}\n" >> postgresql-ds.txt
 printf "UseMultipleStatements=1\n" >> postgresql-ds.txt
 
 # install data source
-sudo odbcinst -i -s -f postgresql-ds.txt
+#sudo odbcinst -i -s -f postgresql-ds.txt
+sudo cat postgresql-ds.txt >> /etc/odbc.ini
 rm -f postgresql-ds.txt
 
-echo "Installed PostgreSQL ODBC driver ${PGSQL_DRIVER}. Data Source ${POSTGRESQL_ODBC_DATASOURCE} is now available for use"
+echo "Installed PostgreSQL ODBC driver [${PGSQL_DRIVER}]. Data Source ${POSTGRESQL_ODBC_DATASOURCE} is now available for use"
