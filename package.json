@@ -7,7 +7,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "lab -v -c --coverage-exclude lib -t 85 -e prod",
+    "test": "env SQLER_ODBC_VENDOR=mysql lab -v -P test -c --coverage-exclude lib -t 85 -e prod",
     "test-mssql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mssql node test/lib/main.js crud",
     "test-oracle": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=oracle node test/lib/main.js crud",
     "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",
@@ -35,7 +35,7 @@
     "@hapi/code": "^8.0.1",
     "@hapi/lab": "^22.0.4",
     "@ugate/labrat": "^2.1.0",
-    "jsdoc": "^3.6.3",
+    "jsdoc": "^3.6.4",
     "jsdocp": "^1.0.3",
     "minami": "^1.2.3",
     "moment-db": "^2.0.0",

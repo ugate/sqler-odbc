@@ -59,3 +59,6 @@ cat postgresql-ds.txt | sudo tee -a /etc/odbc.ini
 rm -f postgresql-ds.txt
 
 printf "Installed PostgreSQL ODBC Data Source ${POSTGRESQL_ODBC_DATASOURCE} for driver [${PGSQL_DRIVER}]:\n`odbcinst -q -s -n "${POSTGRESQL_ODBC_DATASOURCE}"`\n"
+
+# test connection
+printf "quit\r" | isql -v "${POSTGRESQL_ODBC_DATASOURCE}" "${P_UID}" "${P_PWD}"

@@ -51,3 +51,6 @@ P_DSN="DRIVER={${MYSQL_ODBC_DRIVER_NAME}};SERVER=${P_SVR};DATABASE=${P_DBN};UID=
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "${MYSQL_ODBC_DATASOURCE}" -t "${P_DSN}"
 
 printf "Installed MySQL ODBC Data Source ${MYSQL_ODBC_DATASOURCE} for driver [${MYSQL_ODBC_DRIVER_NAME}]:\n`odbcinst -q -s -n "${MYSQL_ODBC_DATASOURCE}"`\n"
+
+# test connection
+printf "quit\r" | isql -v "${MYSQL_ODBC_DATASOURCE}" "${P_UID}" "${P_PWD}"
