@@ -24,9 +24,6 @@ const priv = {
   conf: {}
 };
 
-// ensure unhandled rejections puke with a non-zero exit code
-process.on('unhandledRejection', up => { throw up });
-
 // TODO : ESM uncomment the following line...
 // export
 class Tester {
@@ -380,5 +377,8 @@ function datify(date) {
 
 // when not ran in a test runner execute static Tester functions (excluding what's passed into Main.run) 
 if (!Labrat.usingTestRunner()) {
+  // ensure unhandled rejections puke with a non-zero exit code
+  process.on('unhandledRejection', up => { throw up });
+  // run the test(s)
   (async () => await Labrat.run(Tester))();
 }
