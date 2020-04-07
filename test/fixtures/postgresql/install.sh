@@ -20,12 +20,12 @@ sudo apt-get install postgresql-$POSTGRESQL_MAJOR
 
 # install auto creates postgres user (default install: --auth-local peer --auth-host scram-sha-256)
 # use the current unix user as the postgresql superuser unless it is already set or is postgres
-UID=`[[ -n "$POSTGRESQL_UID" ]] && echo $POSTGRESQL_UID || echo "$(whoami)"`
-if [[ "${UID}" != "postgres" ]]; then
-  echo "Creating PostgreSQL user/role $UID (grant all on postgres DB)"
-  #sudo -u postgres -c "createuser -s ${UID}"
-  sudo -u postgres psql -c "CREATE ROLE ${UID} WITH LOGIN SUPERUSER"
-  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO ${UID}"
+P_UID=`[[ -n "$POSTGRESQL_UID" ]] && echo $POSTGRESQL_UID || echo "$(whoami)"`
+if [[ "${P_UID}" != "postgres" ]]; then
+  echo "Creating PostgreSQL user/role $P_UID (grant all on postgres DB)"
+  #sudo -u postgres -c "createuser -s ${P_UID}"
+  sudo -u postgres psql -c "CREATE ROLE ${P_UID} WITH LOGIN SUPERUSER"
+  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO ${P_UID}"
 fi
 
-echo "Installed PostgreSQL $PGSQL_VER (accessible via sueruser $UID)"
+echo "Installed PostgreSQL $PGSQL_VER (accessible via sueruser $P_UID)"
