@@ -18,9 +18,6 @@ sudo apt-get --purge remove postgresql\*
 # install postgresql
 sudo apt-get install postgresql-$POSTGRESQL_MAJOR
 
-# show postgres auth conf
-cat /${PGDATA}/pg_hba.conf
-
 # install auto creates postgres user (default install: --auth-local peer --auth-host scram-sha-256)
 if [[ "${POSTGRESQL_UID}" != "postgres" ]]; then
   echo "Creating PostgreSQL user/role $POSTGRESQL_UID (grant all on postgres DB)"
