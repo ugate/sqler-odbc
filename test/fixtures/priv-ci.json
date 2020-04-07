@@ -11,7 +11,7 @@
         "username":"root"
       },
       "postgresql": {
-        "username":"ci"
+        "username":"travis"
       },
       "cache": {}
     }

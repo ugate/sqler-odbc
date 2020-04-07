@@ -34,7 +34,7 @@ printf "Installing PostgreSQL ODBC Data Source for driver [${PGSQL_DRIVER}]\n"
 P_SVR=`[[ -n "$POSTGRESQL_ODBC_SERVER" ]] && echo $POSTGRESQL_ODBC_SERVER || echo ""`
 P_PRT=`[[ -n "$POSTGRESQL_ODBC_PORT" ]] && echo $POSTGRESQL_ODBC_PORT || echo ""`
 P_DBN=`[[ -n "$POSTGRESQL_ODBC_DATABASE" ]] && echo $POSTGRESQL_ODBC_DATABASE || echo ""`
-P_UID=`[[ -n "$POSTGRESQL_ODBC_UID" ]] && echo $POSTGRESQL_ODBC_UID || echo "postgres"`
+P_UID=`[[ -n "$POSTGRESQL_ODBC_UID" ]] && echo $POSTGRESQL_ODBC_UID || echo "$(whoami)"`
 P_PWD=`[[ -n "$POSTGRESQL_ODBC_PWD" ]] && echo $POSTGRESQL_ODBC_PWD || echo ""`
 
 printf "\n[${POSTGRESQL_ODBC_DATASOURCE}]\n" > postgresql-ds.txt
