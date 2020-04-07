@@ -29,9 +29,6 @@ wget -O mysql-odbc.tar.gz -nv https://dev.mysql.com/get/Downloads/Connector-ODBC
 tar -xvf mysql-odbc.tar.gz
 # copy the driver libs
 sudo cp $MYSQL_ODBC_NAME/lib/libmyodbc$MYSQL_ODBC_MAJOR* /usr/lib/x86_64-linux-gnu/odbc/
-# cleanup
-rm -fr $MYSQL_ODBC_NAME
-rm -f mysql-odbc.tar.gz
 
 MYSQL_ODBC_DRIVER="/usr/lib/x86_64-linux-gnu/odbc/libmyodbc${MYSQL_ODBC_MAJOR}w.so"
 MYSQL_ODBC_DRIVER_FOUND=`[[ (-f "$MYSQL_ODBC_DRIVER") ]] && echo "Found: $MYSQL_ODBC_DRIVER" || echo "Cannot find: $MYSQL_ODBC_DRIVER"`
@@ -52,6 +49,10 @@ P_PWD=`[[ -n "$MYSQL_ODBC_PWD" ]] && echo $MYSQL_ODBC_PWD || echo ""`
 P_DSN="DRIVER=${MYSQL_ODBC_DRIVER_NAME};SERVER=${P_SVR};DATABASE=${P_DBN};UID=${P_UID};PWD=${P_PWD}"
 
 sudo $MYSQL_ODBC_NAME/bin/myodbc-installer -s -a -c2 -n "${MYSQL_ODBC_DATASOURCE}" -t "${P_DSN}"
+
+# cleanup
+rm -fr $MYSQL_ODBC_NAME
+rm -f mysql-odbc.tar.gz
 
 printf "Installed MySQL ODBC Data Source ${MYSQL_ODBC_DATASOURCE} for driver [${MYSQL_ODBC_DRIVER_NAME}]:\n`odbcinst -q -s -n "${MYSQL_ODBC_DATASOURCE}"`\n"
 
