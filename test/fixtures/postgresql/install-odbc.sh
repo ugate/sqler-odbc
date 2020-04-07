@@ -49,6 +49,7 @@ fi
 if [[ -n "$P_DBN" ]]; then
   printf "Database=${P_DBN}\n" >> postgresql-ds.txt
 fi
+# using default postgres user requires ident/peer access
 printf "UID=${P_UID}\n" >> postgresql-ds.txt
 printf "PWD=${P_PWD}\n" >> postgresql-ds.txt
 printf "UseMultipleStatements=1\n" >> postgresql-ds.txt

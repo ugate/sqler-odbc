@@ -3,8 +3,8 @@ set -e
 
 # ------------------- PostgreSQL -------------------
 
-if [[ -z "${POSTGRESQL_MAJOR}" ]]; then
-  echo "[ERROR]: Environmental variable POSTGRESQL_MAJOR is required when installing PostgreSQL"
+if [[ -z "${POSTGRESQL_MAJOR}" || -z "${POSTGRESQL_UID}" ]]; then
+  echo "[ERROR]: Environmental variables POSTGRESQL_MAJOR and POSTGRESQL_UID are required when installing PostgreSQL"
   exit 1
 fi
 
@@ -16,6 +16,18 @@ echo "Installing PostgreSQL $PGSQL_VER"
 sudo apt-get --purge remove postgresql\*
 
 # install postgresql
-echo "--auth-local md5 --auth-host md5" | sudo apt-get install postgresql-$POSTGRESQL_MAJOR
+sudo apt-get install postgresql-$POSTGRESQL_MAJOR
 
-echo "Installed MySQL $PGSQL_VER"
+# show postgres auth conf
+cat /${PGDATA}/pg_hba.conf
+
+# install auto creates postgres user (default install: --auth-local peer --auth-host scram-sha-256)
+if [[ "${POSTGRESQL_UID}" != "postgres" ]]; then
+  echo "Creating PostgreSQL user/role $POSTGRESQL_UID (grant all on postgres DB)"
+  PWD=`[[ -n "${POSTGRESQL_PWD}" ]] && echo $POSTGRESQL_PWD || echo ""`
+  #sudo -u postgres -c "createuser -s ${POSTGRESQL_UID}"
+  sudo -u postgres psql -c "CREATE ROLE ${POSTGRESQL_UID} WITH LOGIN SUPERUSER PASSWORD '${PWD}'"
+  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO ${POSTGRESQL_UID}"
+fi
+
+echo "Installed PostgreSQL $PGSQL_VER"
