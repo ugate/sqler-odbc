@@ -16,6 +16,6 @@ echo "Installing PostgreSQL $PGSQL_VER"
 sudo apt-get --purge remove postgresql\*
 
 # install postgresql
-sudo apt-get install postgresql-$POSTGRESQL_MAJOR
+sudo apt-get install postgresql-$POSTGRESQL_MAJOR --auth-local md5 --auth-host md5
 
 echo "Installed MySQL $PGSQL_VER"
