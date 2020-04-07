@@ -8,6 +8,14 @@ if [[ -z "${MYSQL_MAJOR}" || -z "${MYSQL_MINOR}" || -z "${MYSQL_PATCH}" ]]; then
   exit 1
 fi
 
+echo "Uninstalling previous versions of MySQL..."
+
+sudo apt-get remove --purge mysql-server mysql-client mysql-common -y
+sudo apt-get autoremove -y
+sudo apt-get autoclean
+sudo rm -rf /etc/mysql
+sudo find / -iname 'mysql*' -exec rm -rf {} \;
+
 MYSQL_VER="$MYSQL_MAJOR.$MYSQL_MINOR-$MYSQL_PATCH"
 MYSQL_NAME="mysql-apt-config_0.${MYSQL_VER}_all.deb"
 
