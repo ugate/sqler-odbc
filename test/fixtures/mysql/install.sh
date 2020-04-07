@@ -27,4 +27,15 @@ sudo mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
 sudo systemctl start mysql
 mysql --version
 
-echo "Installed MySQL $MYSQL_VER"
+# install auto creates mysql user with a blank password
+# use the current unix user as the mysql user unless it is already set or is mysql
+P_UID=`[[ -n "$MYSQL_UID" ]] && echo $MYSQL_UID || echo "$(whoami)"`
+if [[ "${P_UID}" != "mysql" ]]; then
+  echo "Creating MySQL user $P_UID (grant all on ${P_UID} DB)"
+  # mysql -u root
+  sudo mysql -e "CREATE DATABASE ${P_UID}"
+  sudo mysql -e "CREATE USER '${P_UID}'@'localhost' IDENTIFIED BY ''"
+  sudo mysql -e "GRANT ALL PRIVILEGES ON ${P_UID}.* TO '${P_UID}'@'localhost'"
+fi
+
+echo "Installed MySQL $MYSQL_VER (accessible via user: ${P_UID}, database: ${P_UID})"
