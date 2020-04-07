@@ -31,6 +31,8 @@ sudo mysql_upgrade
 sudo systemctl stop mysql
 sudo mysqld_safe --user=mysql --datadir=/usr/local/mysql --upgrade=FORCE &
 sudo systemctl start mysql
+# cleanup
+rm -fr $MYSQL_NAME
 mysql --version
 
 # install auto creates mysql user with a blank password
