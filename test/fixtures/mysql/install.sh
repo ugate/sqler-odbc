@@ -34,7 +34,7 @@ if [[ "${P_UID}" != "mysql" ]]; then
   echo "Creating MySQL user $P_UID (grant all on ${P_UID} DB)"
   # mysql -u root
   sudo mysql -e "CREATE DATABASE IF NOT EXISTS ${P_UID}"
-  sudo mysql -e "CREATE USER '${P_UID}'@'localhost' IDENTIFIED BY ''"
+  sudo mysql -e "CREATE USER IF NOT EXISTS '${P_UID}'@'localhost' IDENTIFIED BY ''"
   sudo mysql -e "GRANT ALL PRIVILEGES ON ${P_UID}.* TO '${P_UID}'@'localhost'"
 fi
 
