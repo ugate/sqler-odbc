@@ -10,13 +10,21 @@ node_js:
 #  - mysql
 #  - postgresql
 env:
-  - MYSQL_MAJOR=8 MYSQL_MINOR=14 MYSQL_PATCH=1 MYSQL_ODBC_MAJOR=8 MYSQL_ODBC_MINOR=0 MYSQL_ODBC_PATCH=19 MYSQL_ODBC_DATASOURCE=MySQL POSTGRESQL_MAJOR=12 POSTGRESQL_ODBC_DATASOURCE=PostgreSQL
+  - REPO_VER=v1.2.0 MYSQL_MAJOR=8 MYSQL_MINOR=14 MYSQL_PATCH=1 MYSQL_ODBC_MAJOR=8 MYSQL_ODBC_MINOR=0 MYSQL_ODBC_PATCH=19 MYSQL_ODBC_DATASOURCE=MySQL POSTGRESQL_MAJOR=12 POSTGRESQL_ODBC_DATASOURCE=PostgreSQL
 before_install:
   - sudo apt-get install unixodbc unixodbc-dev
-  - bash ./test/fixtures/mysql/install.sh
-  - bash ./test/fixtures/mysql/install-odbc.sh
-  - bash ./test/fixtures/postgresql/install.sh
-  - bash ./test/fixtures/postgresql/install-odbc.sh
+  - wget -O install-mysql.sh https://raw.githubusercontent.com/ugate/repo/$REPO_VER/mysql/install.sh
+  - wget -O install-mysql-odbc.sh https://raw.githubusercontent.com/ugate/repo/$REPO_VER/mysql/install-odbc.sh
+  - wget -O install-postgresql.sh https://raw.githubusercontent.com/ugate/repo/$REPO_VER/postgresql/install.sh
+  - wget -O install-postgresql-odbc.sh https://raw.githubusercontent.com/ugate/repo/$REPO_VER/postgresql/install-odbc.sh
+  - bash ./install-mysql.sh
+  - bash ./install-mysql-odbc.sh
+  - bash ./install-postgresql.sh
+  - bash ./install-postgresql-odbc.sh
+  - rm -rf install-mysql.sh
+  - rm -rf install-mysql-odbc.sh
+  - rm -rf install-postgresql.sh
+  - rm -rf install-postgresql-odbc.sh
   - odbcinst -j
   - odbcinst -q -d
   - odbcinst -q -s
