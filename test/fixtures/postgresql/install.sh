@@ -23,9 +23,13 @@ sudo apt-get install postgresql-$POSTGRESQL_MAJOR
 P_UID=`[[ -n "$POSTGRESQL_UID" ]] && echo $POSTGRESQL_UID || echo "$(whoami)"`
 if [[ "${P_UID}" != "postgres" ]]; then
   echo "Creating PostgreSQL user/role $P_UID (grant all on postgres DB)"
+  # using postgres cli
   #sudo -u postgres -c "createuser -s ${P_UID}"
-  sudo -u postgres psql -c "CREATE ROLE ${P_UID} WITH LOGIN SUPERUSER"
-  sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO ${P_UID}"
+  # permission denied using the following:
+  #sudo -u postgres psql -c "CREATE ROLE ${P_UID} WITH LOGIN SUPERUSER"
+  #sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE postgres TO ${P_UID}"
+  sudo su - postgres -c "psql -c \"CREATE ROLE ${P_UID} WITH LOGIN SUPERUSER\""
+  sudo su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE postgres TO ${P_UID}\""
 fi
 
 echo "Installed PostgreSQL $PGSQL_VER (accessible via sueruser $P_UID)"
