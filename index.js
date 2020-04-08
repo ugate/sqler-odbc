@@ -229,7 +229,7 @@ module.exports = class OdbcDialect {
     } catch (err) {
       if (conn) {
         try {
-          conn.close();
+          await conn.close();
         } catch (cerr) {
           err.closeError = cerr;
         }
