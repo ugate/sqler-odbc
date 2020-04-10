@@ -2,10 +2,9 @@
 
 > __Most of documentation pertaining to general configuration for `sqler-odbc` can be found in the [`sqler` manual](https://ugate.github.io/sqler).__
 
-| 〽️<u>Required Module</u> | ✔️<u>Compatible Version</u> |
-| :---:         |     :---:      |
-| [`sqler`](https://ugate.github.io/sqler/) | __`>= 5.4.0`__ |
-| [`odbc`](https://www.npmjs.com/package/odbc/) | __`>= 2.2.2`__ |
+The following modules versions are required when using `sqler-odbc`:
+```jsdocp ./package.json @~ devDependencies.sqler @~ devDependencies.odbc
+```
 
 Install the required modules:
 ```sh

@@ -182,11 +182,7 @@ module.exports = class OdbcDialect {
       bndp = dlt.at.track.interpolate(bndp, opts.binds, dlt.at.odbc, props => sql.includes(`:${props[0]}`));
 
       // odbc expects binds to be in an array
-      esql = sql.replace(/:(\w+)(?=([^'\\]*(\\.|'([^'\\]*\\.)*[^'\\]*'))*[^']*$)/g, (match, pname) => {
-        if (!bndp[pname]) throw new Error(`sqler-odbc: Unbound "${pname}" at position ${ebndp.length}`);
-        ebndp.push(bndp[pname]);
-        return '?';
-      });
+      esql = dlt.at.track.positionalBinds(sql, bndp, ebndp);
 
       const dopts = opts.driverOptions ? dlt.at.track.interpolate({}, opts.driverOptions, dlt.at.odbc) : {};
 
