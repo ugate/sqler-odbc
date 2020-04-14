@@ -187,8 +187,7 @@ module.exports = class OdbcDialect {
       const dopts = opts.driverOptions ? dlt.at.track.interpolate({}, opts.driverOptions, dlt.at.odbc) : {};
       const rtn = {};
 
-      // even (opts.type !== 'READ') can use pool.query to commit 
-      if (!opts.transactionId) {
+      if (!opts.transactionId && opts.type === 'READ') {
         rslts = await dlt.at.pool.query(esql, ebndp);
       } else {
         conn = await dlt.this.getConnection(opts);
