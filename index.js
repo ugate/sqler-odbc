@@ -185,9 +185,10 @@ module.exports = class OdbcDialect {
       esql = dlt.at.track.positionalBinds(sql, bndp, ebndp);
 
       const dopts = opts.driverOptions ? dlt.at.track.interpolate({}, opts.driverOptions, dlt.at.odbc) : {};
+      const rtn = {};
 
-      const isQuery = !opts.transactionId && opts.type === 'READ';
-      if (isQuery) {
+      // even (opts.type !== 'READ') can use pool.query to commit 
+      if (!opts.transactionId) {
         rslts = await dlt.at.pool.query(esql, ebndp);
       } else {
         conn = await dlt.this.getConnection(opts);
@@ -203,14 +204,7 @@ module.exports = class OdbcDialect {
         } finally {
           if (stmt) await stmt.close();
         }
-      }
 
-      const rtn = {
-        rows: rslts, // odbc returns an array rather than rslts.rows array
-        raw: rslts
-      };
-
-      if (!isQuery) {
         if (opts.autoCommit) {
           // ODBC has no option to autocommit during SQL execution
           await operation(dlt, 'commit', false, conn, opts)();
@@ -221,6 +215,10 @@ module.exports = class OdbcDialect {
           rtn.rollback = operation(dlt, 'rollback', true, conn, opts);
         }
       }
+
+      // odbc returns an array rather than rslts.rows array
+      rtn.raw = rslts;
+      rtn.rows = rslts;
       return rtn;
     } catch (err) {
       if (conn) {
@@ -252,7 +250,7 @@ module.exports = class OdbcDialect {
     const txId = opts.transactionId;
     let conn = txId ? dlt.at.connections[txId] : null;
     if (!conn) {
-      conn = await dlt.at.pool.connect();
+      return dlt.at.pool.connect();
     }
     return conn;
   }
