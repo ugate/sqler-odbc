@@ -207,7 +207,6 @@ module.exports = class OdbcDialect {
         if (opts.autoCommit) {
           // ODBC has no option to autocommit during SQL execution
           await operation(dlt, 'commit', false, conn, opts)();
-          await operation(dlt, 'close', true, conn, opts)();
         } else {
           dlt.at.state.pending++;
           rtn.commit = operation(dlt, 'commit', true, conn, opts);
