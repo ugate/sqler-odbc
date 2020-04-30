@@ -15,7 +15,8 @@
           "connection": {
             "DSN": "${service}",
             "UID": "${username}",
-            "PWD": "${password}"
+            "PWD": "${password}",
+            "DATABASE": "${username}"
           },
           "pool": {
             "shrink": true
