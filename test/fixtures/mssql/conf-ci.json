@@ -14,7 +14,8 @@
         "driverOptions": {
           "connection": {
             "DSN": "${service}",
-            "UID": "${username}"
+            "UID": "${username}",
+            "PWD": "${password}"
           },
           "pool": {
             "shrink": true
