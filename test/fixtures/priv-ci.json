@@ -2,7 +2,8 @@
   "univ": {
     "db": {
       "mssql": {
-        "username": "travis"
+        "username": "travis",
+        "password": "390Khy7MxeU8N"
       },
       "oracle": {
         "username": "travis"
