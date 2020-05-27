@@ -59,7 +59,8 @@ module.exports = class OdbcDialect {
     const dlt = internal(this);
     dlt.at.track = track;
     dlt.at.odbc = require('odbc');
-    dlt.at.connections = {};
+    dlt.at.connections = new Map();
+    dlt.at.stmts = new Map();
     dlt.at.opts = {
       autoCommit: true, // default autoCommit = true to conform to sqler
       id: `sqlerOdbcGen${Math.floor(Math.random() * 10000)}`,
@@ -152,15 +153,16 @@ module.exports = class OdbcDialect {
    */
   async beginTransaction(txId) {
     const dlt = internal(this);
-    if (dlt.at.connections[txId]) return;
+    if (dlt.at.connections.has(txId)) return;
     if (dlt.at.logger) {
       dlt.at.logger(`sqler-odbc: Beginning transaction "${txId}" on connection pool "${dlt.at.opts.id}"`);
     }
-    dlt.at.connections[txId] = await dlt.this.getConnection({ transactionId: txId });
+    const conn = await dlt.this.getConnection({ transactionId: txId });
+    dlt.at.connections.set(txId, conn);
     try {
-      await dlt.at.connections[txId].beginTransaction();
+      await conn.beginTransaction();
     } catch (err) {
-      delete dlt.at.connections[txId];
+      dlt.at.connections.delete(txId);
       throw err;
     }
   }
@@ -176,7 +178,7 @@ module.exports = class OdbcDialect {
    */
   async exec(sql, opts, frags, meta, errorOpts) {
     const dlt = internal(this);
-    let conn, bndp = {}, ebndp = [], esql, rslts;
+    let conn, bndp = {}, ebndp = [], esql, rslts, stmt;
     try {
       // interpolate and remove unused binds since
       // ODBC only accepts the exact number of bind parameters (also, cuts down on payload bloat)
@@ -186,32 +188,63 @@ module.exports = class OdbcDialect {
       esql = dlt.at.track.positionalBinds(sql, bndp, ebndp);
 
       const dopts = opts.driverOptions ? dlt.at.track.interpolate({}, opts.driverOptions, dlt.at.odbc) : {};
+      const hasIsoLvl = dopts.hasOwnProperty('isolationLevel');
       const rtn = {};
 
-      if (!opts.transactionId && opts.type === 'READ') {
+      if (!opts.transactionId && !opts.prepareStatement && !hasIsoLvl && opts.type === 'READ') {
         rslts = await dlt.at.pool.query(esql, ebndp);
       } else {
-        conn = await dlt.this.getConnection(opts);
-        if (dopts.hasOwnProperty('isolationLevel')) {
-          await conn.setIsolationLevel(dopts.isolationLevel);
-        }
-        let stmt;
-        try {
-          stmt = await conn.createStatement();
-          await stmt.prepare(esql);
+        if (opts.prepareStatement) {
+          let pso;
+          const psname = meta.name;
+          if (dlt.at.stmts.has(psname)) {
+            pso = dlt.at.stmts.get(psname);
+            if (pso.connProm) await pso.connProm;
+            if (hasIsoLvl) await pso.conn.setIsolationLevel(dopts.isolationLevel);
+            if (pso.stmtProm) await pso.stmtProm;
+            if (pso.prepProm) await pso.prepProm;
+          } else {
+            pso = { sql: esql };
+            // set before async in case concurrent PS invocations
+            dlt.at.stmts.set(psname, pso);
+            pso.connProm = dlt.this.getConnection(opts);  // other PS exec need access to promise in order to wait for connection access
+            pso.conn = conn = await pso.connProm; // wait for the initial PS to establish a connection (other PS exec need access to promise)
+            if (hasIsoLvl) await pso.conn.setIsolationLevel(dopts.isolationLevel);
+            pso.connProm = null; // reset promise once it completes
+            pso.stmtProm = conn.createStatement();
+            pso.stmt = await pso.stmtProm;
+            pso.stmtProm = null;
+            pso.prepProm = stmt.prepare(esql);
+            await pso.prepProm;
+            pso.prepProm = null;
+          }
+          conn = pso.conn;
+          stmt = pso.stmt;
+          rtn.unprepare = async () => {
+            if (dlt.at.stmts.has(psname)) {
+              const pso = dlt.at.stmts.get(psname);
+              try {
+                await pso.stmt.close();
+              } finally {
+                if (!opts.transactionId) await pso.conn.close();
+              }
+            } else if (!opts.transactionId) await conn.close();
+          };
           await stmt.bind(ebndp);
           rslts = await stmt.execute();
-        } finally {
-          if (stmt) await stmt.close();
+        } else {
+          conn = await dlt.this.getConnection(opts);
+          if (hasIsoLvl) await conn.setIsolationLevel(dopts.isolationLevel);
+          rslts = await dlt.at.pool.query(esql, ebndp);
         }
 
         if (opts.autoCommit) {
           // ODBC has no option to autocommit during SQL execution
-          await operation(dlt, 'commit', false, conn, opts)();
+          await operation(dlt, 'commit', false, conn, opts, rtn.unprepare)();
         } else {
           dlt.at.state.pending++;
-          rtn.commit = operation(dlt, 'commit', true, conn, opts);
-          rtn.rollback = operation(dlt, 'rollback', true, conn, opts);
+          rtn.commit = operation(dlt, 'commit', true, conn, opts, rtn.unprepare);
+          rtn.rollback = operation(dlt, 'rollback', true, conn, opts, rtn.unprepare);
         }
       }
 
@@ -247,7 +280,7 @@ module.exports = class OdbcDialect {
   async getConnection(opts) {
     const dlt = internal(this);
     const txId = opts.transactionId;
-    let conn = txId ? dlt.at.connections[txId] : null;
+    let conn = txId ? dlt.at.connections.get(txId) : null;
     if (!conn) {
       return dlt.at.pool.connect();
     }
@@ -298,11 +331,13 @@ module.exports = class OdbcDialect {
  * @param {Boolean} reset Truthy to reset the pending connection and transaction count when the operation completes successfully
  * @param {Object} conn The connection
  * @param {Manager~ExecOptions} [opts] The {@link Manager~ExecOptions}
+ * @param {Function} [preop] A no-argument async function that will be executed prior to the operation
  * @returns {Function} A no-arguement `async` function that returns the number or pending transactions
  */
-function operation(dlt, name, reset, conn, opts) {
+function operation(dlt, name, reset, conn, opts, preop) {
   return async () => {
     let error;
+    if (preop) await preop();
     try {
       //if (!conn) conn = await dlt.at.pool.connect(); // get connection from the pool
       if (dlt.at.logger) {
@@ -310,7 +345,7 @@ function operation(dlt, name, reset, conn, opts) {
       }
       await conn[name]();
       if (reset) {
-        if (opts && opts.transactionId) delete dlt.at.connections[opts.transactionId];
+        if (opts && opts.transactionId) dlt.at.connections.delete(opts.transactionId);
         dlt.at.state.pending = 0;
       }
     } catch (err) {
