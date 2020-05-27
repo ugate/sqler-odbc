@@ -124,7 +124,7 @@ module.exports = class OdbcDialect {
    * @returns {Object} The ODBC connection pool
    */
   async init(opts) {
-    const dlt = internal(this), numSql = opts.numOfPreparedStmts;
+    const dlt = internal(this), numSql = opts.numOfPreparedFuncs;
     try {
       dlt.at.pool = await dlt.at.odbc.pool(dlt.at.opts.pool);
       if (dlt.at.logger) {
