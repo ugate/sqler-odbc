@@ -63,10 +63,15 @@ __Read Rows:__
 ```jsdocp ./test/lib/postgresql/read.table.rows.js
 ```
 
-__Update Rows:__
+__Update Rows:__<sub id="update"></sub>
 
-```jsdocp ./test/db/postgresql/update.table.rows.sql
--- db/postgresql/update.table.rows.sql
+Although the following updates can be made within a single SQL script, multiple SQL scripts are used to illustrate the use of tranactions and/or prepared statements.
+
+```jsdocp ./test/db/postgresql/update.table1.rows.sql
+-- db/postgresql/update.table1.rows.sql
+```
+```jsdocp ./test/db/postgresql/update.table2.rows.sql
+-- db/postgresql/update.table2.rows.sql
 ```
 
 ```jsdocp ./test/lib/postgresql/update.table.rows.js

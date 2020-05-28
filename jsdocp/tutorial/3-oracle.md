@@ -63,10 +63,15 @@ __Read Rows:__
 ```jsdocp ./test/lib/oracle/read.table.rows.js
 ```
 
-__Update Rows:__
+__Update Rows:__<sub id="update"></sub>
 
-```jsdocp ./test/db/oracle/update.table.rows.sql
--- db/oracle/update.table.rows.sql
+Although the following updates can be made within a single SQL script, multiple SQL scripts are used to illustrate the use of tranactions and/or prepared statements.
+
+```jsdocp ./test/db/oracle/update.table1.rows.sql
+-- db/oracle/update.table1.rows.sql
+```
+```jsdocp ./test/db/oracle/update.table2.rows.sql
+-- db/oracle/update.table2.rows.sql
 ```
 
 ```jsdocp ./test/lib/oracle/update.table.rows.js

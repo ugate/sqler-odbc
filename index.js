@@ -214,7 +214,7 @@ module.exports = class OdbcDialect {
             pso.stmtProm = conn.createStatement();
             pso.stmt = await pso.stmtProm;
             pso.stmtProm = null;
-            pso.prepProm = stmt.prepare(esql);
+            pso.prepProm = pso.stmt.prepare(esql);
             await pso.prepProm;
             pso.prepProm = null;
           }
@@ -225,6 +225,7 @@ module.exports = class OdbcDialect {
               const pso = dlt.at.stmts.get(psname);
               try {
                 await pso.stmt.close();
+                dlt.at.stmts.delete(psname);
               } finally {
                 if (!opts.transactionId) await pso.conn.close();
               }
@@ -238,13 +239,15 @@ module.exports = class OdbcDialect {
           rslts = await dlt.at.pool.query(esql, ebndp);
         }
 
-        if (opts.autoCommit) {
-          // ODBC has no option to autocommit during SQL execution
-          await operation(dlt, 'commit', false, conn, opts, rtn.unprepare)();
-        } else {
-          dlt.at.state.pending++;
-          rtn.commit = operation(dlt, 'commit', true, conn, opts, rtn.unprepare);
-          rtn.rollback = operation(dlt, 'rollback', true, conn, opts, rtn.unprepare);
+        if (opts.transactionId) {
+          if (opts.autoCommit) {
+            // ODBC has no option to autocommit during SQL execution
+            await operation(dlt, 'commit', false, conn, opts, rtn.unprepare)();
+          } else {
+            dlt.at.state.pending++;
+            rtn.commit = operation(dlt, 'commit', true, conn, opts, rtn.unprepare);
+            rtn.rollback = operation(dlt, 'rollback', true, conn, opts, rtn.unprepare);
+          }
         }
       }
 
@@ -298,6 +301,8 @@ module.exports = class OdbcDialect {
         dlt.at.logger(`sqler-odbc: Closing connection pool "${dlt.at.opts.id}" (uncommitted transactions: ${dlt.at.state.pending})`);
       }
       if (dlt.at.pool) await dlt.at.pool.close();
+      dlt.at.connections.clear();
+      dlt.at.stmts.clear();
       return dlt.at.state.pending;
     } catch (err) {
       if (dlt.at.errorLogger) {

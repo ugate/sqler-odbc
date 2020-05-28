@@ -69,10 +69,15 @@ __Read Rows:__
 ```jsdocp ./test/lib/mssql/read.table.rows.js
 ```
 
-__Update Rows:__
+__Update Rows:__<sub id="update"></sub>
 
-```jsdocp ./test/db/mssql/update.table.rows.sql
--- db/mssql/update.table.rows.sql
+Although the following updates can be made within a single SQL script, multiple SQL scripts are used to illustrate the use of tranactions and/or prepared statements.
+
+```jsdocp ./test/db/mssql/update.table1.rows.sql
+-- db/mssql/update.table1.rows.sql
+```
+```jsdocp ./test/db/mssql/update.table2.rows.sql
+-- db/mssql/update.table2.rows.sql
 ```
 
 ```jsdocp ./test/lib/mssql/update.table.rows.js
