@@ -7,8 +7,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "",
-    "test-mysql-suite": "env SQLER_ODBC_VENDOR=mysql lab -v -P .test -c -t 85 -e prod",
+    "test": "env SQLER_ODBC_VENDOR=mysql lab -v -P .test -c -t 85 -e prod",
     "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",
     "test-mssql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mssql node test/lib/main.js crud",
     "test-oracle": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=oracle node test/lib/main.js crud",
