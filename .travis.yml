@@ -37,9 +37,9 @@ branches:
     - "/v*/"
 script:
 # - printenv
-#  - "npm test"
   - "npm run test-postgresql"
   - "npm run test-mssql"
+  - "npm test"
 deploy:
   #edge: true # avoid dpl v2 missing api_token
   - provider: script
