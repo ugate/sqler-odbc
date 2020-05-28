@@ -263,11 +263,9 @@ module.exports = class OdbcDialect {
           err.closeError = cerr;
         }
       }
-      const msg = ` (BINDS: [${Object.keys(bndp)}], FRAGS: ${Array.isArray(frags) ? frags.join(', ') : frags})`;
       if (dlt.at.errorLogger) {
         dlt.at.errorLogger(`Failed to execute the following SQL: ${sql}`, err);
       }
-      err.message += msg;
       err.sqler = { sqlODBC: esql };
       //err.sqler.bindsODBC = errorOpts && errorOpts.includeBindValues ? ebndp : Object.keys(bndp);
       throw err;
