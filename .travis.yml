@@ -39,7 +39,7 @@ script:
 # - printenv
   - "npm run test-postgresql"
   - "npm run test-mssql"
-  - "lab -v -P .test -c -t 85 -e prod"
+  - "npm test"
 deploy:
   #edge: true # avoid dpl v2 missing api_token
   - provider: script
