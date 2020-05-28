@@ -20,7 +20,7 @@ const priv = {
   mgrLogit: !!LOGGER.info,
   // TODO : oracle "Error: [odbc] Error executing the statement" for create.table.rows.sql (multiple statements)
   // change the vendor to run `node test/lib/main.js crud` for different DBs (e.g. mssql, oracle, etc.)
-  vendor: process.env.SQLER_ODBC_VENDOR,
+  vendor: process.env.SQLER_ODBC_VENDOR || 'mysql',
   conf: {}
 };
 
