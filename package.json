@@ -7,11 +7,10 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "lab -v -P test -c --coverage-exclude lib -t 85 -e prod",
-    "test-mysql-suite": "env SQLER_ODBC_VENDOR=mysql lab -v -P test -c --coverage-exclude lib -t 85 -e prod",
-    "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",
+    "test": "env SQLER_ODBC_VENDOR=mysql lab -v -P test -c --coverage-exclude lib -t 85 -e prod",
     "test-mssql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mssql node test/lib/main.js crud",
     "test-oracle": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=oracle node test/lib/main.js crud",
+    "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",
     "test-postgresql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=postgresql node test/lib/main.js crud",
     "jsdocp": "jsdocp ./jsdocp/jsdoc.json",
     "jsdocp-deploy": "jsdocp -D ./jsdocp/jsdoc.json"
@@ -44,7 +43,6 @@
     "sqler": "^5.12.2"
   },
   "files": [
-    "/index.js",
-    "/lib/**/*"
+    "/index.js"
   ]
 }
