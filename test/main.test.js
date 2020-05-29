@@ -15,8 +15,8 @@ exports.lab = lab;
 // TODO : import { expect } from '@hapi/code';
 // TODO : export * as lab from lab;
 
-const TEST_TKO = 3000;
-const TEST_LONG_TKO = 7000;
+const TEST_TKO = 5000;
+const TEST_LONG_TKO = 10000;
 const plan = `ODBC DB Manager (${process.env.SQLER_ODBC_VENDOR})`;
 
 // node test/lib/main.js someTestFunction -NODE_ENV=test
@@ -45,5 +45,5 @@ lab.experiment(plan, () => {
   lab.test(`${plan}: Invalid SQL`, Labrat.expectFailure('onUnhandledRejection', { expect, label: 'invalid SQL throw' }, Tester.invalidSqlThrow));
   lab.test(`${plan}: Invalid bind parameter`, Labrat.expectFailure('onUnhandledRejection', { expect, label: 'invalid bind param throw' }, Tester.invalidBindThrow));
   lab.test(`${plan}: Create with isolation level`, { timeout: TEST_TKO }, Tester.isolationLevel);
-  lab.test(`${plan}: CRUD`, { timeout: TEST_TKO }, Tester.crud);
+  lab.test(`${plan}: CRUD`, { timeout: TEST_LONG_TKO }, Tester.crud);
 });

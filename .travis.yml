@@ -37,7 +37,7 @@ branches:
     - "/v*/"
 script:
 # - printenv
-  - "npm run test-postgresql"
+  - "npm run test-mysql"
   - "npm run test-mssql"
   - "npm test"
 deploy:

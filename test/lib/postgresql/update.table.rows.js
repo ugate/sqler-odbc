@@ -23,15 +23,19 @@ module.exports = async function runExample(manager, connName) {
   // 2. Explicit (suitable for multiple executions per tx)
 
   // using implicit transactions:
+  console.log(`---------------------------- Implicit Transaction Update ----------------------------`);
   await implicitTransactionUpdate(manager, connName, binds1, binds2, rtn);
 
   // Using an explicit transaction:
+  console.log(`---------------------------- Explicit Transaction Update ----------------------------`);
   await explicitTransactionUpdate(manager, connName, binds1, binds2, rtn);
 
   // Using a prepared statement:
+  console.log(`---------------------------- Prepared Statement Update ----------------------------`);
   await preparedStatementUpdate(manager, connName, binds1, rtn);
 
   // Using a prepared statement within an explicit transaction
+  console.log(`---------------------------- Prepared Statement Explicit Transaction Update ----------------------------`);
   await preparedStatementExplicitTxUpdate(manager, connName, binds1, rtn);
 
   return rtn;
