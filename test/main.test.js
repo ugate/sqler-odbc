@@ -42,8 +42,8 @@ lab.experiment(plan, () => {
   lab.test(`${plan}: Multiple connections`, { timeout: TEST_TKO }, Tester.multipleConnections);
   lab.test(`${plan}: Close before init`, { timeout: TEST_TKO }, Tester.closeBeforeInit);
 
-  lab.test(`${plan}: CRUD`, { timeout: TEST_TKO }, Tester.crud);
   lab.test(`${plan}: Invalid SQL`, Labrat.expectFailure('onUnhandledRejection', { expect, label: 'invalid SQL throw' }, Tester.invalidSqlThrow));
   lab.test(`${plan}: Invalid bind parameter`, Labrat.expectFailure('onUnhandledRejection', { expect, label: 'invalid bind param throw' }, Tester.invalidBindThrow));
   lab.test(`${plan}: Create with isolation level`, { timeout: TEST_TKO }, Tester.isolationLevel);
+  lab.test(`${plan}: CRUD`, { timeout: TEST_TKO }, Tester.crud);
 });
