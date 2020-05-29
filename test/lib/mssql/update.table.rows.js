@@ -66,21 +66,21 @@ async function explicitTransactionUpdate(manager, connName, binds1, binds2, rtn)
     const txId = await manager.db[connName].beginTransaction();
 
     // Example execution in parallel (same transacion)
-    rtn.txExpRslts[0] = manager.db[connName].update.table1.rows({
+    // NOTE: SQL Server ODBC driver may crash app if ran in parallel
+    rtn.txExpRslts[0] = await manager.db[connName].update.table1.rows({
       name: 'TX Explicit 1 (UPDATE)', // name is optional
       autoCommit: false,
       transactionId: txId, // ensure execution takes place within transaction
       binds: binds1
     });
-    rtn.txExpRslts[1] = manager.db[connName].update.table2.rows({
+    rtn.txExpRslts[1] = await manager.db[connName].update.table2.rows({
       name: 'TX Explicit 2 (UPDATE)', // name is optional
       autoCommit: false,
       transactionId: txId, // ensure execution takes place within transaction
       binds: binds2
     });
-    // could have also ran is series by awaiting when the SQL function is called
-    rtn.txExpRslts[0] = await rtn.txExpRslts[0];
-    rtn.txExpRslts[1] = await rtn.txExpRslts[1];
+    // rtn.txExpRslts[0] = await rtn.txExpRslts[0];
+    // rtn.txExpRslts[1] = await rtn.txExpRslts[1];
 
     // could commit using either one of the returned results
     await rtn.txExpRslts[0].commit();
