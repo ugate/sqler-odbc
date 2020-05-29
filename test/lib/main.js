@@ -335,7 +335,7 @@ function getConf(overrides) {
         else if (overrides[prop]) conn[prop] = overrides[prop];
         else delete conn[prop];
       } else if (prop === 'pool') {
-        conn.pool.min = Math.floor((process.env.UV_THREADPOOL_SIZE - 1) / 2) || 2;
+        conn.pool.min = Math.floor((process.env.UV_THREADPOOL_SIZE - 1) / 2) || 4;
         conn.pool.max = process.env.UV_THREADPOOL_SIZE ? process.env.UV_THREADPOOL_SIZE - 1 : conn.pool.min;
         conn.pool.increment = 1;
         if (!overrides) return conf; // no need to continue since there are no more options that need to be set manually

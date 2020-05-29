@@ -157,14 +157,9 @@ module.exports = class OdbcDialect {
     if (dlt.at.logger) {
       dlt.at.logger(`sqler-odbc: Beginning transaction "${txId}" on connection pool "${dlt.at.opts.id}"`);
     }
-    const conn = await dlt.this.getConnection({ transactionId: txId });
+    const conn = await dlt.this.getConnection({ transactionId: txId }, true);
+    await conn.beginTransaction();
     dlt.at.connections.set(txId, conn);
-    try {
-      await conn.beginTransaction();
-    } catch (err) {
-      dlt.at.connections.delete(txId);
-      throw err;
-    }
   }
 
   /**
@@ -235,8 +230,14 @@ module.exports = class OdbcDialect {
           rslts = await stmt.execute();
         } else {
           conn = await dlt.this.getConnection(opts);
-          if (hasIsoLvl) await conn.setIsolationLevel(dopts.isolationLevel);
-          rslts = await dlt.at.pool.query(esql, ebndp);
+          await operation(dlt, 'query', false, {
+            query: async () => {
+              if (hasIsoLvl) await conn.setIsolationLevel(dopts.isolationLevel);
+              rslts = await conn.query(esql, ebndp);
+            },
+            // tx conn should be left open until commit/rollback
+            close: async () => opts.transactionId ? null : conn.close()
+          }, opts)();
         }
 
         if (opts.transactionId) {
@@ -276,13 +277,15 @@ module.exports = class OdbcDialect {
    * Gets the currently open connection or a new connection when no transaction is in progress
    * @protected
    * @param {OdbcExecOptions} opts The execution options
+   * @param {Boolean} [begin] Truthy when the `opts.transactionId` is beng started
    * @returns {Object} The connection (when present)
    */
-  async getConnection(opts) {
+  async getConnection(opts, begin) {
     const dlt = internal(this);
     const txId = opts.transactionId;
     let conn = txId ? dlt.at.connections.get(txId) : null;
     if (!conn) {
+      if (txId && !begin) throw new Error(`Invalid transactionId: ${txId}`);
       return dlt.at.pool.connect();
     }
     return conn;
@@ -314,7 +317,12 @@ module.exports = class OdbcDialect {
    * @returns {Manager~State} The state
    */
   get state() {
-    return JSON.parse(JSON.stringify(internal(this).at.state));
+    const dlt = internal(this);
+    if (dlt.at.pool && dlt.at.pool.freeConnections) {
+      dlt.at.state.connection.count = dlt.at.pool.freeConnections.length;
+      dlt.at.state.connection.inUse = dlt.at.opts.pool.maxSize - dlt.at.state.connection.count;
+    }
+    return JSON.parse(JSON.stringify(dlt.at.state));
   }
 
   /**

@@ -126,7 +126,7 @@ async function preparedStatementUpdate(manager, connName, binds, rtn) {
 }
 
 async function preparedStatementExplicitTxUpdate(manager, connName, binds, rtn) {
-  rtn.txExpPsRslts = new Array(2); // don't exceed connection pool count
+  rtn.txExpPsRslts = new Array(3); // don't exceed connection pool count
   try {
     // start a transaction
     const txId = await manager.db[connName].beginTransaction();
