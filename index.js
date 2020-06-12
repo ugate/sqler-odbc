@@ -255,6 +255,15 @@ module.exports = class OdbcDialect {
       // odbc returns an array rather than rslts.rows array
       rtn.raw = rslts;
       rtn.rows = rslts;
+
+      if (dlt.at.debug && rslts) {
+        try {
+          console.debug(`sqler-odbc (debug): Executed statement with parameters [${rslts.parameters}]...\n${rslts.statement}\n`);
+        } catch (err) {
+          // consume
+        }
+      }
+
       return rtn;
     } catch (err) {
       if (conn) {

@@ -183,8 +183,13 @@ class Tester {
   }
 
   static async isolationLevel() {
+    const conf = getConf({ test: null });
+    conf.debug = true;
+    const mgr = new Manager(conf, priv.cache, priv.mgrLogit || generateTestAbyssLogger);
+    await mgr.init();
+
     const date = datify();
-    return priv.mgr.db[priv.vendor].create.table.rows({
+    return mgr.db[priv.vendor].create.table.rows({
       binds: {
         id: 10000, name: 'Isolation Level Test', created: date, updated: date,
         id2: 10000, name2: 'Isolation Level Test', report2: Buffer.from('TEST REPORT'), created2: date, updated2: date
