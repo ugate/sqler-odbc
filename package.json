@@ -40,7 +40,7 @@
     "minami": "^1.2.3",
     "moment-db": "^2.0.0",
     "odbc": "^2.3.0",
-    "sqler": "^5.13.0"
+    "sqler": "^5.13.1"
   },
   "files": [
     "/index.js"
