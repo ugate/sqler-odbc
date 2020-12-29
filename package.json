@@ -7,7 +7,7 @@
     "node": ">=12"
   },
   "scripts": {
-    "test": "env SQLER_ODBC_VENDOR=postgresql lab -v -P .test -c -t 85 -e prod",
+    "test": "env SQLER_ODBC_VENDOR=postgresql lab -v -P .test -c -t 85 -e prod -I \"FinalizationRegistry,WeakRef\"",
     "test-postgresql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=postgresql node test/lib/main.js crud",
     "test-mysql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mysql node test/lib/main.js crud",
     "test-mssql": "env NODE_ENV=prod env SQLER_ODBC_VENDOR=mssql node test/lib/main.js crud",
