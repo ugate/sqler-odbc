@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/ugate/sqler-odbc#readme",
   "devDependencies": {
-    "@hapi/code": "^8.0.1",
-    "@hapi/lab": "^22.0.4",
+    "@hapi/code": "^8.0.2",
+    "@hapi/lab": "^24.1.0",
     "@ugate/labrat": "^2.1.0",
-    "jsdoc": "^3.6.4",
+    "jsdoc": "^3.6.6",
     "jsdocp": "^1.2.1",
     "minami": "^1.2.3",
     "moment-db": "^2.0.0",
-    "odbc": "^2.3.0",
+    "odbc": "^2.3.5",
     "sqler": "^5.13.2"
   },
   "files": [
